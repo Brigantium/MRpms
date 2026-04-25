@@ -33,23 +33,21 @@ ConfPMS <- function(muestra, modas, dim = ncol(muestra) -1,
   
   if(type==1 | type==2){
     Deltasb <- apply(Deltasbx, 2, max)
-    delta <- quantile(Deltasb, nivel)
-    sapply(1:length(xg), function(i) lines(rep(xg[i],2), c(yg[i]-delta, yg[i]+delta), col ="lightgrey", lwd = 1.5))
-    points(xg, yg - delta, col = "grey", pch = 19, cex = 0.4)
-    points(xg, yg + delta, col = "grey", pch = 19, cex = 0.4)
+    delta <- stats::quantile(Deltasb, nivel)
+    sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-delta, yg[i]+delta), col ="lightgrey", lwd = 1.5))
+    graphics::points(xg, yg - delta, col = "grey", pch = 19, cex = 0.4)
+    graphics::points(xg, yg + delta, col = "grey", pch = 19, cex = 0.4)
     salida <- append(salida, list(delta = delta))
   }
   
   if(type==0 | type==2){
-    deltasx <- apply(Deltasbx, 1, function(x) quantile(x, nivel))
+    deltasx <- apply(Deltasbx, 1, function(x) stats::quantile(x, nivel))
     radio <- rep(deltasx, ni)
-    # points(xg, yg - radio, col = "blue", pch = 19, cex = 0.4)
-    # points(xg, yg + radio, col = "blue", pch = 19, cex= 0.4)
-    sapply(1:length(xg), function(i) lines(rep(xg[i],2), c(yg[i]-radio[i], yg[i]+radio[i]), col ="blue", lwd = 1.5))
+    sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-radio[i], yg[i]+radio[i]), col ="blue", lwd = 1.5))
     salida <- append(salida, list(deltax = radio))
   }
   
-  points(xg, yg, col = "red", pch = 19)
+  graphics::points(xg, yg, col = "red", pch = 19)
   
   return(salida)
 }

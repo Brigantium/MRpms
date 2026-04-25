@@ -10,7 +10,7 @@
                                                                 ymalla = malla[(i-1)*k+(1:k),dim+1],
                                                                 h1 = h1, h2 = h2,eps = eps, k = k, n = n)),p-1))))
   
-  epsh <- quantile(sapply(1:n, function(i) min(abs(Y[i] - aux[[i]]))), nivel)
+  epsh <- stats::quantile(sapply(1:n, function(i) min(abs(Y[i] - aux[[i]]))), nivel)
   
 
   aux2 <- PMSc(X,Y,malla = mallau,h1 = h1,h2 = h2, p = p, dim = dim,

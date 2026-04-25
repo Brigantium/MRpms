@@ -23,16 +23,16 @@ ConjuntoPredUniforme <- function(muestra, modas, dim = ncol(muestra) -1,
                                                                    x = malla.aux[(i-1)*k+1,1:dim],
                                                                    ymalla = malla.aux[(i-1)*k+(1:k),dim+1],
                                                                    h1 = h1, h2 = h2,eps = eps, k = k, n = n)),p-2)))
-  epsh <- quantile(sapply(1:n, function(i) min(abs(Y[i] - aux[[i]]))), nivel)
+  epsh <- stats::quantile(sapply(1:n, function(i) min(abs(Y[i] - aux[[i]]))), nivel)
   
   if(dim == 1){
     plot(X, Y)
     ni <- sapply(modas, length)
     xg <- rep(xx, times = ni)
     yg <- unlist(modas)
-    sapply(1:length(xg), function(i) lines(rep(xg[i],2), c(yg[i]-epsh, yg[i]+epsh), col ="lightgrey", lwd = 1.5))
-    points(xg, yg - epsh, col = "grey", pch = 19, cex = 0.4)
-    points(xg, yg + epsh, col = "grey", pch = 19, cex = 0.4)
-    points(xg, yg, col = "red", pch = 19 )
+    sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-epsh, yg[i]+epsh), col ="lightgrey", lwd = 1.5))
+    graphics::points(xg, yg - epsh, col = "grey", pch = 19, cex = 0.4)
+    graphics::points(xg, yg + epsh, col = "grey", pch = 19, cex = 0.4)
+    graphics::points(xg, yg, col = "red", pch = 19 )
   }
 }
