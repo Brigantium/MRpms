@@ -5,7 +5,7 @@ Authors@R:
     person("Iker", "Rodríguez Rodríguez", , "iker.rodriguez.rodriguez@rai.usc.es", role = c("aut", "cre"))
     person("Ángel Antonio", "Pérez Balo", , "angelantonio.perez@rai.usc.es", role = c("aut", "cre"))
 Description: What the package does (one paragraph).
-License: use_gpl3_license()
+License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3

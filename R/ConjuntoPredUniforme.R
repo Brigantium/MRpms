@@ -4,7 +4,8 @@ ConjuntoPredUniforme <- function(muestra, modas, dim = ncol(muestra) -1,
                                  h1 = 0.4, h2 = 1, n = length(Y), 
                                  eps = 1e-8, p = -log(eps, base = 10), 
                                  nivel = 0.95){
-  # paso <- if(dim==1) .pasoU else .pasoM
+
+  
   
   xx <- attr(malla,"xx")
   k <- attr(malla, "k")
@@ -18,7 +19,7 @@ ConjuntoPredUniforme <- function(muestra, modas, dim = ncol(muestra) -1,
 
 
   malla.aux = mallador(X,Y,malla.x = X,dim = dim)
-  aux <- sapply(1:n, function(i) unique(round(unlist(PMF1C(X = X[-i], Y = Y[-i],
+  aux <- sapply(1:n, function(i) unique(round(unlist(PMS1(X = X[-i], Y = Y[-i],
                                                                    x = malla.aux[(i-1)*k+1,1:dim],
                                                                    ymalla = malla.aux[(i-1)*k+(1:k),dim+1],
                                                                    h1 = h1, h2 = h2,eps = eps, k = k, n = n)),p-2)))

@@ -19,7 +19,7 @@ PMS.hP <- function(muestra, dim = ncol(muestra)-1,
   medidashs <- apply(Hs, 1, function(h) .hP(X = X, Y = Y, malla = malla, 
                                             dim = dim, h1 = h[1], h2 = h[2], 
                                             p = p, eps = eps, n = n, 
-                                            paso = paso, nivel = nivel,
+                                            nivel = nivel,
                                             mallau = mallau, ku = ku, 
                                             lu = lu, pasoxxu = pasoxxu, mu = mu))
   

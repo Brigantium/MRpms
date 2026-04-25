@@ -4,8 +4,7 @@ ConfPMS <- function(muestra, modas, dim = ncol(muestra) -1,
                     eps = 1e-8, p = floor(-log(eps, base = 10)),
                     nivel=0.95, B=500, type = 2,
                     semilla = 2026){
-  
-  # paso <- if(dim==1) .pasoU else .pasoM
+
   
   xx <- attr(malla,"xx")
   k <- attr(malla, "k")
@@ -30,7 +29,7 @@ ConfPMS <- function(muestra, modas, dim = ncol(muestra) -1,
   Deltasbx <- replicate(B, .Deltas(X = X, Y = Y, modas = modas,
                                    malla = malla, n = n, k = k, l = l, 
                                    h1 = h1, h2 = h2, p = p, eps = eps, 
-                                   paso = paso, dim = dim, m = m))
+                                   dim = dim))
   
   if(type==1 | type==2){
     Deltasb <- apply(Deltasbx, 2, max)
