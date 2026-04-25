@@ -3,10 +3,9 @@ Title: Preforms unidimensional and multidimensional modal regression based in th
 Version: 0.4.0.000
 Authors@R: 
     person("Iker", "Rodríguez Rodríguez", , "iker.rodriguez.rodriguez@rai.usc.es", role = c("aut", "cre"))
-    person("Ángel Antonio", "Pérez Balo", , "", role = c("aut", "cre"))
+    person("Ángel Antonio", "Pérez Balo", , "angelantonio.perez@rai.usc.es", role = c("aut", "cre"))
 Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: use_gpl3_license()
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3

@@ -6,17 +6,17 @@ SEXP PMS(SEXP Xarg, SEXP Yarg, SEXP mallarg, SEXP dimarg, SEXP h1arg, SEXP h2arg
 
   double *X = REAL(Xarg);
   double *Y = REAL(Yarg);
-  short int dim = asInteger(dimarg);
+  short int dim = Rf_asInteger(dimarg);
   double *malla = REAL(mallarg); // tendremos que acceder como un vector obtenido tras concatenar las columnas de la matriz original
   double h1 = REAL(h1arg)[0];
   double h2 = REAL(h2arg)[0];
-  short int p = asInteger(parg);
+  short int p = Rf_asInteger(parg);
   double eps = REAL(epsarg)[0];
-  int k = asInteger(karg);
-  int n = asInteger(narg);
-  int l = asInteger(larg);
+  int k = Rf_asInteger(karg);
+  int n = Rf_asInteger(narg);
+  int l = Rf_asInteger(larg);
 
-  SEXP modasres = PROTECT(allocVector(VECSXP, l));
+  SEXP modasres = PROTECT(Rf_allocVector(VECSXP, l));
 
 
   double *ymalla_aux = (double*)malloc(sizeof(double)*k);
@@ -71,7 +71,7 @@ SEXP PMS(SEXP Xarg, SEXP Yarg, SEXP mallarg, SEXP dimarg, SEXP h1arg, SEXP h2arg
     }
 
     
-    SEXP modasi_aux = allocVector(REALSXP, nmodas);
+    SEXP modasi_aux = Rf_allocVector(REALSXP, nmodas);
     for(int it = 0; it <nmodas; it++){
       REAL(modasi_aux)[it] = unique_modas_aux[it];
     }

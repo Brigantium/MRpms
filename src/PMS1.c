@@ -10,8 +10,8 @@ SEXP PMS1(SEXP Xarg, SEXP Yarg, SEXP xarg, SEXP ymallaarg, SEXP h1arg, SEXP h2ar
   double h1 = REAL(h1arg)[0];
   double h2 = REAL(h2arg)[0];
   double eps = REAL(epsarg)[0];
-  int k = asInteger(karg);
-  int n = asInteger(narg);
+  int k = Rf_asInteger(karg);
+  int n = Rf_asInteger(narg);
   
   double *y = (double*)malloc(sizeof(double)*k);
   int yend = 0;
@@ -38,7 +38,7 @@ SEXP PMS1(SEXP Xarg, SEXP Yarg, SEXP xarg, SEXP ymallaarg, SEXP h1arg, SEXP h2ar
     
   }
   
-  SEXP  yres = PROTECT(allocVector(REALSXP, k));
+  SEXP  yres = PROTECT(Rf_allocVector(REALSXP, k));
   for(int i = 0;i < k;i++){
     REAL(yres)[i] = y[i];
     // SET_VECTOR_ELT(yres, i, ScalarReal(y[i]));

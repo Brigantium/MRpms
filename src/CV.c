@@ -6,14 +6,14 @@
 SEXP CV(SEXP Xarg, SEXP Yarg, SEXP mallarg, SEXP dimarg, SEXP h1arg, SEXP h2arg, SEXP parg, SEXP epsarg, SEXP narg, SEXP karg){
   double *X = REAL(Xarg);
   double *Y = REAL(Yarg);
-  short int dim = asInteger(dimarg);
+  short int dim = Rf_asInteger(dimarg);
   double *malla = REAL(mallarg); // tendremos que acceder como un vector obtenido tras concatenar las columnas de la matriz original
   double h1 = REAL(h1arg)[0];
   double h2 = REAL(h2arg)[0];
-  short int p = asInteger(parg);
+  short int p = Rf_asInteger(parg);
   double eps = REAL(epsarg)[0];
-  int k = asInteger(karg);
-  int n = asInteger(narg);
+  int k = Rf_asInteger(karg);
+  int n = Rf_asInteger(narg);
 
   // resultado a devolver
   double rescv = 0.;
@@ -102,7 +102,7 @@ SEXP CV(SEXP Xarg, SEXP Yarg, SEXP mallarg, SEXP dimarg, SEXP h1arg, SEXP h2arg,
 
   rescv = rescv/(double)n;
 
-  SEXP res = PROTECT(allocVector(REALSXP, 1));
+  SEXP res = PROTECT(Rf_allocVector(REALSXP, 1));
   REAL(res)[0] = rescv;
   UNPROTECT(1);
   return(res);
