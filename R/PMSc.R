@@ -1,6 +1,7 @@
- ## usethis namespace: start
-  #' @useDynLib MRpms, .registration = TRUE
-  ## usethis namespace: end
+#' @export 
+## usethis namespace: start
+#' @useDynLib MRpms, .registration = TRUE
+## usethis namespace: end
   NULL
 
 

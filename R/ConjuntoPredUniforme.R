@@ -1,4 +1,4 @@
-
+#' @export
 
 PredPMS <- function(muestra, modas, dim = ncol(muestra) -1, 
                                  X = muestra[,1:dim], Y = muestra[,dim+1], 
@@ -9,7 +9,7 @@ PredPMS <- function(muestra, modas, dim = ncol(muestra) -1,
 
   
   
-  xx <- attr(malla,"x.malla")
+  x.malla <- attr(malla,"x.malla")
   k <- attr(malla, "k")
   l <- attr(malla, "len")
   
@@ -28,7 +28,7 @@ PredPMS <- function(muestra, modas, dim = ncol(muestra) -1,
   if(dim == 1){
     plot(X, Y)
     ni <- sapply(modas, length)
-    xg <- rep(xx, times = ni)
+    xg <- rep(x.malla, times = ni)
     yg <- unlist(modas)
     sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-epsh, yg[i]+epsh), col ="lightgrey", lwd = 1.5))
     graphics::points(xg, yg - epsh, col = "grey", pch = 19, cex = 0.4)
