@@ -1,4 +1,6 @@
-ConjuntoPredUniforme <- function(muestra, modas, dim = ncol(muestra) -1, 
+
+
+PredPMS <- function(muestra, modas, dim = ncol(muestra) -1, 
                                  X = muestra[,1:dim], Y = muestra[,dim+1], 
                                  malla = mallador(X, Y, dim = dim), 
                                  h1 = 0.4, h2 = 1, n = length(Y), 
@@ -7,19 +9,17 @@ ConjuntoPredUniforme <- function(muestra, modas, dim = ncol(muestra) -1,
 
   
   
-  xx <- attr(malla,"xx")
+  xx <- attr(malla,"x.malla")
   k <- attr(malla, "k")
-  l <- attr(malla, "l")
-  m <- nrow(malla)
+  l <- attr(malla, "len")
   
   if(missing(modas)){
         modas <- PMSc(X,Y,malla = malla,h1 = h1,h2 = h2, p = p, eps = eps, dim = dim,
                   n = n, k = k, l = l)
   }
 
-
-  malla.aux = mallador(X,Y,malla.x = X,dim = dim)
-  aux <- sapply(1:n, function(i) unique(round(unlist(PMS1(X = X[-i], Y = Y[-i],
+  malla.aux = mallador(X,Y,x.malla = X,dim = dim)
+  aux <- sapply(1:n, function(i) unique(round(unlist(PMS1c(X = X[-i], Y = Y[-i],
                                                                    x = malla.aux[(i-1)*k+1,1:dim],
                                                                    ymalla = malla.aux[(i-1)*k+(1:k),dim+1],
                                                                    h1 = h1, h2 = h2,eps = eps, k = k, n = n)),p-2)))

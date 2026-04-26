@@ -1,3 +1,3 @@
-norma <- function(v,V){
+MRpms_norma <- function(v,V){
   return(sqrt(apply((v-V)^2,1,sum)))
 }
