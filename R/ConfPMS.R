@@ -2,13 +2,11 @@
 #' 
 #' Compute pointwise and uniform confidence intervals to each mode. Besides, plot both confidence intervales and data points.
 #' 
-#' @param muestra Matrix which contains the data points.
+#' @param muestra Matrix which contains the data points. 
 #' 
 #' @param X Matrix of covariable data points in case `muestra` not present.
 #' 
 #' @param Y Vector with response values in case `muestra` not present.
-#' 
-#' @param dim DImension of covariable.
 #' 
 #' @param modas List of vector which contains the modes on each covariable point of `malla`. In case `modas` missing, the function calls `PMSc` to compute them.
 #' 
@@ -36,14 +34,25 @@
 #' @export
 
 
-ConfPMS <- function(muestra = cbind(X,Y), modas, dim = ncol(muestra) -1, 
-                    malla = mallador(X, Y, dim = dim), h1 = 0.3, h2 = 0.5, 
+ConfPMS <- function(muestra = cbind(X,Y), modas,  
+                    malla, h1 = 0.3, h2 = 0.5, 
                     eps = 1e-8, p = floor(-log(eps, base = 10)),
-                    X = muestra[,1:dim], Y = muestra[,dim+1], 
+                    
                     conf.level=0.95, B=500, type = 2,
                     seed = 2026){
 
+                      
+  dim = ncol(muestra) - 1
+
+  X = muestra[,1:dim]
+  Y = muestra[,dim+1]
+
+  if(missing(malla)){
+     malla = mallador(X, Y, dim = dim)
+  }
   
+  if(length(X))
+
   x.malla <- attr(malla,"x.malla")
   k <- attr(malla, "k")
   l <- attr(malla, "len")

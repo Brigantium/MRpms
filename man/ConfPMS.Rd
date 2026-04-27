@@ -7,14 +7,11 @@
 ConfPMS(
   muestra = cbind(X, Y),
   modas,
-  dim = ncol(muestra) - 1,
-  malla = mallador(X, Y, dim = dim),
+  malla,
   h1 = 0.3,
   h2 = 0.5,
   eps = 1e-08,
   p = floor(-log(eps, base = 10)),
-  X = muestra[, 1:dim],
-  Y = muestra[, dim + 1],
   conf.level = 0.95,
   B = 500,
   type = 2,
@@ -26,8 +23,6 @@ ConfPMS(
 
 \item{modas}{List of vector which contains the modes on each covariable point of \code{malla}. In case \code{modas} missing, the function calls \code{PMSc} to compute them.}
 
-\item{dim}{DImension of covariable.}
-
 \item{malla}{Matrix of points used to compute the modes using the Partial Mean-Shift algorithm. If not provided, function calls  \code{mallador} to compute}
 
 \item{h1}{Smoothing parameter for covariables.}
@@ -38,10 +33,6 @@ ConfPMS(
 
 \item{p}{Number of significance digits considered to diference modes.}
 
-\item{X}{Matrix of covariable data points in case \code{muestra} not present.}
-
-\item{Y}{Vector with response values in case \code{muestra} not present.}
-
 \item{conf.level}{Confidence level of intervals.}
 
 \item{B}{Number of \emph{bootstrap} simulations to compute the confidence intervals.}
@@ -49,6 +40,10 @@ ConfPMS(
 \item{type}{Numerical argument. "0" to compute pointwise intervals, "1" to uniform intervals or "2" to compute both. By default, preforms both.}
 
 \item{seed}{Seed to generate the \emph{bootstrap} simulations.}
+
+\item{X}{Matrix of covariable data points in case \code{muestra} not present.}
+
+\item{Y}{Vector with response values in case \code{muestra} not present.}
 }
 \value{
 A list. In all three cases of \code{type} values firts entry are a point list with all modes. If \code{type} is 0, returns a vector with every pointwise ratios too; if \code{type} is 1 returns the uniform ratio.
