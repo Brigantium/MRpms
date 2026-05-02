@@ -12,6 +12,8 @@ ConfPMS(
   h2 = 0.5,
   eps = 1e-08,
   p = floor(-log(eps, base = 10)),
+  k = attr(malla, "k"),
+  l = attr(malla, "len"),
   conf.level = 0.95,
   B = 500,
   type = 2,
@@ -33,6 +35,10 @@ ConfPMS(
 
 \item{p}{Number of significance digits considered to diference modes.}
 
+\item{k}{Number of Y values per x value in the \code{malla} object created, if \code{malla} is not provided.}
+
+\item{l}{Number of X diferent points computed in the \code{malla} object.}
+
 \item{conf.level}{Confidence level of intervals.}
 
 \item{B}{Number of \emph{bootstrap} simulations to compute the confidence intervals.}
@@ -46,7 +52,8 @@ ConfPMS(
 \item{Y}{Vector with response values in case \code{muestra} not present.}
 }
 \value{
-A list. In all three cases of \code{type} values firts entry are a point list with all modes. If \code{type} is 0, returns a vector with every pointwise ratios too; if \code{type} is 1 returns the uniform ratio.
+A list. In all three cases of \code{type} values, firts entry is a list with all modes estimated. If \code{type} is 0,
+returns a vector with every pointwise ratios too; if \code{type} is 1 returns the uniform ratio.
 }
 \description{
 Compute pointwise and uniform confidence intervals to each mode. Besides, plot both confidence intervales and data points.

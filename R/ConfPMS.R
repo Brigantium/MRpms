@@ -28,7 +28,12 @@
 #' 
 #' @param seed Seed to generate the _bootstrap_ simulations.
 #' 
-#' @return A list. In all three cases of `type` values firts entry are a point list with all modes. If `type` is 0, returns a vector with every pointwise ratios too; if `type` is 1 returns the uniform ratio.
+#' @param k Number of Y values per x value in the `malla` object created, if `malla` is not provided.
+#' 
+#' @param l Number of X diferent points computed in the `malla` object.
+#' 
+#' @return A list. In all three cases of `type` values, firts entry is a list with all modes estimated. If `type` is 0,
+#'  returns a vector with every pointwise ratios too; if `type` is 1 returns the uniform ratio.
 #' 
 #'
 #' @export
@@ -37,45 +42,95 @@
 ConfPMS <- function(muestra = cbind(X,Y), modas,  
                     malla, h1 = 0.3, h2 = 0.5, 
                     eps = 1e-8, p = floor(-log(eps, base = 10)),
-                    
+                    k = attr(malla,"k"), l = attr(malla, "len"),
                     conf.level=0.95, B=500, type = 2,
                     seed = 2026){
 
-                      
-  dim = ncol(muestra) - 1
+  # comprobación de los argumentos suministrados:
 
+  # comprobar si recibimos una muestra válida
+  if(missing(muestra)){
+    warning("There is no sample data provided. Missing `muestra` matrix")
+    return()
+  } else{
+    # comprobamos si de hecho es una matriz o array
+    if(!methods::is(muestra,"array") & !methods::is(muestra,"matrix")){
+      warning("`muestra` argument is not a matrix nor an array.")
+      return()
+    }
+  }
+  
+  # calculamos la dimensión de la covariable
+  dim = ncol(muestra) - 1
+  # comprobamos que el número de dimensiones sea correcto
+  if (!methods::is(dim,"numeric")){
+    warning("Number of dimensions not correct. Pleas, check `muestra` has more than two columns.")
+    return()
+  }
+
+  # Separamos la variable explicativa de la variable respuesta
   X = muestra[,1:dim]
   Y = muestra[,dim+1]
 
+
+  # si no se da una malla, se especifica una  
   if(missing(malla)){
-     malla = mallador(X, Y, dim = dim)
+    
+    # de ser proveído un objeto modas, entonces construimos la malla con los puntos con los que esta fue calculada
+    if(!missing(modas)){
+      
+      if (missing(k)){
+        warning("Provide the desired number of Y values per x point on the `malla`, `k`.")
+        return()
+      }
+      malla = mallador(X,Y, dim = dim, x.malla = attr(modas,"x.malla"), k = k)
+    } else{  # si no fue provisto un objeto `modas`, usamos los argumentos suministrados
+      if(missing(k) | missing(l)){
+        warning("Not enough arguments to compute a `malla` object. Please, check `k` and `l` argument were provided.")
+        return()
+      }
+      malla = mallador(X, Y, dim = dim, k = k, len = l)
+    }
+  } else {
+    # en caso de que tengamos ambos, comprobemos que están definidos sobre los mismos 
+    # puntos.
+    if(!missing(modas)){
+      if(attr(modas,"x.malla") != attr(malla,"x.malla")){
+        warning("`x.malla` in both `malla` object and `modas` object are not equals.
+Please, provide a `malla` object build over the same `x.malla` as `modas`.")
+        return()
+      }
+    }
   }
   
-  if(length(X))
-
-  x.malla <- attr(malla,"x.malla")
-  k <- attr(malla, "k")
-  l <- attr(malla, "len")
-  n <- length(Y)
+  # obtenemos la información de la malla necesaria
+  x.malla <- attr(malla,"x.malla") # puntos sobre los que está construida
+  k <- attr(malla, "k") # número de Y's por punto de la malla
+  l <- attr(malla, "len") # número de puntos x diferentes en la malla
+  n <- length(Y) # tamaño muestral
   
+
   if(missing(modas)){
 
     modas <- PMSc(X,Y,malla = malla,h1 = h1,h2 = h2, p = p, eps = eps, dim = dim,
                   n = n, k = k, l = l)
   }
+
+  # graficamos las modas calculadas
   plot(X, Y)
   ni <- sapply(modas, length)
   xg <- rep(x.malla, times = ni)
   yg <- unlist(modas)
   salida <- list(puntos=cbind(xg,yg))
   
+
   X <- matrix(X, ncol=dim)
   set.seed(seed)
-  Deltasbx <- matrix(Bdeltas(X,Y,modas,ni,malla,n,k,l,h1,h2,p,eps,dim,B,seed),nrow = l, byrow = TRUE)
-  # Deltasbx <- replicate(B, .Deltas(X = X, Y = Y, modas = modas,
-  #                                  malla = malla, n = n, k = k, l = l, 
-  #                                  h1 = h1, h2 = h2, p = p, eps = eps, 
-  #                                  dim = dim))
+  # Deltasbx <- matrix(Bdeltas(X,Y,modas,ni,malla,n,k,l,h1,h2,p,eps,dim,B,seed),nrow = l, byrow = TRUE)
+  Deltasbx <- replicate(B, .Deltas(X = X, Y = Y, modas = modas, 
+                                   malla = malla, n = n, k = k, l = l, 
+                                   h1 = h1, h2 = h2, p = p, eps = eps, 
+                                   dim = dim))
   
   if(type==1 | type==2){
     Deltasb <- apply(Deltasbx, 2, max)

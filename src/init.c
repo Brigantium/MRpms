@@ -10,13 +10,13 @@
 /* .Call calls */
 extern SEXP bootstrap_deltas(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP CV(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP PMS(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP PMSC(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP PMS1(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"bootstrap_deltas", (DL_FUNC) &bootstrap_deltas, 15},
     {"CV",               (DL_FUNC) &CV,               10},
-    {"PMS",              (DL_FUNC) &PMS,              11},
+    {"PMSC",             (DL_FUNC) &PMSC,              11},
     {"PMS1",             (DL_FUNC) &PMS1,              9},
     {NULL, NULL, 0}
 };

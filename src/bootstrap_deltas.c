@@ -37,6 +37,7 @@ SEXP bootstrap_deltas(SEXP Xarg, SEXP Yarg, SEXP modasarg, SEXP nmodasarg, SEXP 
             Xb[i] = X[ind];
         }
 
+
   
         short int nmodasb = 0;
         
@@ -74,9 +75,19 @@ SEXP bootstrap_deltas(SEXP Xarg, SEXP Yarg, SEXP modasarg, SEXP nmodasarg, SEXP 
             unique_modasb_aux[nmodasb] = (double)round(modasb_aux[0]*(double)pow(10.,(p-2)))/(double)pow(10.,(p-2));
             nmodasb++; //contamos la primera moda
             
+            double nuevo_minimo = INFINITY;
+            double nuevo_candidato;
+            for(int it = 0;it <nmodas[i];it++){
+                nuevo_candidato = fabs(modasb_aux[0] - modas[it + pun]);
+                // Rprintf("%f\n",nuevo_candidato);
+                if (nuevo_candidato < nuevo_minimo){
+                    nuevo_minimo = nuevo_candidato;
+                }
+
+            }
         
             // realizamos le proceso de búsqueda de las modas únicas, a la vez que computamos la distancia Hausdorff con las modas originales en x.malla[i]
-            double nuevo_maximo = -INFINITY;
+            double nuevo_maximo = nuevo_minimo;
             for(int j = 1; j<k;j++){
                 modasb_aux[j] = (double)round(modasb_aux[j]*(double)pow(10.,(p-2)))/(double)pow(10.,(p-2)); // procesamos la moda
                 

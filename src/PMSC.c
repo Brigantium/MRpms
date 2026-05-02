@@ -2,7 +2,7 @@
 #include "header.h"
 #include "PMS1c.h"
 
-SEXP PMS(SEXP Xarg, SEXP Yarg, SEXP mallarg, SEXP dimarg, SEXP h1arg, SEXP h2arg, SEXP parg, SEXP epsarg, SEXP narg, SEXP karg, SEXP larg){
+SEXP PMSC(SEXP Xarg, SEXP Yarg, SEXP mallarg, SEXP dimarg, SEXP h1arg, SEXP h2arg, SEXP parg, SEXP epsarg, SEXP narg, SEXP karg, SEXP larg){
 
   double *X = REAL(Xarg);
   double *Y = REAL(Yarg);
