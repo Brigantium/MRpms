@@ -16,12 +16,10 @@ PMS.hP <- function(muestra, dim = ncol(muestra)-1,
   n <- length(Y)
   mu <- nrow(mallau)
   
-  medidashs <- apply(Hs, 1, function(h) .hP(X = X, Y = Y, malla = malla, 
+  medidashs <- apply(Hs, 1, function(h) hP(X = X, Y = Y, malla = malla, 
                                             dim = dim, h1 = h[1], h2 = h[2], 
                                             p = p, eps = eps, n = n, 
-                                            nivel = nivel,
-                                            mallau = mallau, ku = ku, 
-                                            lu = lu, pasoxxu = pasoxxu, mu = mu))
+                                            nivel = nivel))
   
   return(Hs[which.min(medidashs),])
 }

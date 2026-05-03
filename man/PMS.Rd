@@ -2,7 +2,7 @@
 % Please edit documentation in R/PMSr.R
 \name{PMS}
 \alias{PMS}
-\title{Performs modal regression over a given sample of unidimensional or multidimensional covariable.}
+\title{Function to performs modal regression}
 \usage{
 PMS(
   muestra,
@@ -35,6 +35,10 @@ PMS(
 
 \item{malla}{Matrix of points used to compute the modes using the Partial Mean-Shift algorithm. If not provided, function calls  \code{mallador} to compute.}
 }
+\value{
+The function returns a list of \code{l} entries, each of one contains the modes estimated in each \code{x.malla}. In addition, \code{x.malla} is returned as attribute.
+}
 \description{
-Performs modal regression over a given sample of unidimensional or multidimensional covariable.
+This function performs modal regression over a given sample of unidimensional, in future multidimensional, covariable, using a
+given set of points where estimate.
 }

@@ -12,8 +12,8 @@ ConfPMS(
   h2 = 0.5,
   eps = 1e-08,
   p = floor(-log(eps, base = 10)),
-  k = attr(malla, "k"),
-  l = attr(malla, "len"),
+  k,
+  l,
   conf.level = 0.95,
   B = 500,
   type = 2,
@@ -23,9 +23,9 @@ ConfPMS(
 \arguments{
 \item{muestra}{Matrix which contains the data points.}
 
-\item{modas}{List of vector which contains the modes on each covariable point of \code{malla}. In case \code{modas} missing, the function calls \code{PMSc} to compute them.}
+\item{modas}{List of vector which contains the modes on each covariable point of \code{malla}. In case \code{modas} missing, the function calls \code{PMSc} to compute them. It must be an special class object MRpms_modas.}
 
-\item{malla}{Matrix of points used to compute the modes using the Partial Mean-Shift algorithm. If not provided, function calls  \code{mallador} to compute}
+\item{malla}{Matrix of points used to compute the modes using the Partial Mean-Shift algorithm. If not provided, function calls  \code{mallador} to compute. It must be an special class object MRpms_malla.}
 
 \item{h1}{Smoothing parameter for covariables.}
 

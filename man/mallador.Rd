@@ -35,7 +35,7 @@ their associated \code{y} value. Besides, the matrix have three attributes: \cod
 which contains a matrix with the diferents \code{x} points.
 }
 \description{
-Guiven a matrix with data points, or two matrix with the covariable points and response values,
+Given a matrix with data points, or two matrix with the covariable points and response values,
 construct a mesh of points in both ways: compute ´l´ diferent equidistant \code{x} points and asign \code{k} diferent \code{y}
 values to each ones between the nearest data points; or take a given \code{x} matrix of points and preforms the same construction.
 }

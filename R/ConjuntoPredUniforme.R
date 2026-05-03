@@ -8,19 +8,11 @@
 #' 
 #' @param modas List of vector which contains the modes on each covariable point of `malla`. In case `modas` missing, the function calls `PMSc` to compute them.
 #' 
-#' @param X Matrix of covariable data points in case `muestra` not present.
-#' 
-#' @param Y Vector with response values in case `muestra` not present.
-#' 
-#' @param dim Dimension of covariable.
-#' 
-#' @param malla Matrix of points used to compute the modes using the Partial Mean-Shift algorithm. If not provided, function calls  `mallador` to compute.
+#' @param x.malla Set of covariable points where compute the modes. Not needed if a `modas` object is provided.
 #' 
 #' @param h1 Smoothing parameter for covariables.
 #' 
 #' @param h2 Smoothing parameter for response variable.
-#' 
-#' @param type Numerical argument. "0" to compute pointwise intervals, "1" to uniform intervals or "2" to compute both. By default, preforms both.
 #' 
 #' @param eps Tolerance of convergence and minimum diference between modes.
 #' 
@@ -28,21 +20,109 @@
 #' 
 #' @param conf.level Confidence level of intervals.
 #' 
+#' @param k Number of Y values per x value in the `malla` object created, if `malla` is not provided.
+#' 
+#' @param l Number of X diferent points computed in the `malla` object.
+#' 
+#' @param malla Matrix of points used to compute the modes using the Partial Mean-Shift algorithm. If not provided, function calls  `mallador` to compute.
 #' 
 #' @export
 
-PredPMS <- function(muestra, modas, dim = ncol(muestra) -1, 
-                                 X = muestra[,1:dim], Y = muestra[,dim+1], 
-                                 malla = mallador(X, Y, dim = dim), 
-                                 h1 = 0.4, h2 = 1, n = length(Y), 
-                                 eps = 1e-8, p = -log(eps, base = 10), 
-                                 conf.level = 0.95){
+PredPMS <- function(muestra, modas, 
+                    x.malla, h1 = 0.4, h2 = 1, 
+                    eps = 1e-8, p = -log(eps, base = 10), 
+                    conf.level = 0.95,k, l ,malla){
 
+  # comprobación de los argumentos suministrados:
+  if(!methods::is(h1,"numeric") | h2==0){
+    stop("Bandwidth for covariable estimator `h1` is not a positive (>0) numeric value.")
+  }
+
+  
+  if(!methods::is(h2,"numeric")| h2==0){
+    stop("Bandwidth for response estimator `h2` is not a positive (>0) numeric value.")
+    
+  }
+  
+  if(!methods::is(p,"numeric")){
+    stop("Precision must be an unidimensional numeric value.")
+  }
+  p = floor(abs(p))
+  
+  if(!methods::is(k,"numeric")){
+    stop("The number of initial Y values per x.malla point must be an unidimensional integer value.")
+  }
+  k = floor(abs(k))
+  
+  
+  if (!methods::is(conf.level, "numeric") | length(as.vector(conf.level)) != 1L | conf.level > 1 | conf.level <0){
+    stop("Confidence level must be a number between 0 and 1.")
+  }
+  
+  
+
+  if(!missing(malla)){
+    if(!methods::is(malla, "MRpms_malla")) stop("`malla` is not a `malla` object. Use `mallador` function to compute one.")
+  }
+
+  # comprobar si recibimos una muestra válida
+
+  # comprobamos si de hecho es una matriz o array
+  if((!methods::is(muestra,"array") & !methods::is(muestra,"matrix")) | typeof(muestra) != "double" ){
+    stop("`muestra` argument is not a numeric matrix nor an array.")
+    
+  }
+  
+  
+  # calculamos la dimensión de la covariable
+  dim = ncol(muestra) - 1
+
+  # comprobamos que el número de dimensiones sea correcto
+  if (!methods::is(dim,"numeric")){
+    stop("Number of dimensions not correct. Pleas, check `muestra` has more than two columns.")
+    
+  }
+
+  # Separamos la variable explicativa de la variable respuesta
+  X = muestra[,1:dim]
+  Y = muestra[,dim+1]
+
+  # si no se da una malla, se especifica una  
+  if(missing(malla)){
+    
+    # de ser proveído un objeto modas, entonces construimos la malla con los puntos con los que esta fue calculada
+    if(!missing(modas)){
+      if(!methods::is(modas, "MRpms_modas")) stop("`modas` is not an MRpms_modas object, please, use only an object result of an MRpms function package.")
+      if (missing(k)){
+        stop("Provide the desired number of Y values per x point on the `malla`, `k`.")
+        
+      }
+      malla = mallador(X,Y, dim = dim, x.malla = attr(modas,"x.malla"), k = k)
+    } else{  # si no fue provisto un objeto `modas`, usamos los argumentos suministrados
+      if(missing(k) | missing(l)){
+        stop("Not enough arguments to compute a `malla` object. Please, check `k` and `l` argument were provided.")
+        
+      }
+      malla = mallador(X, Y, dim = dim, k = k, len = l)
+    }
+  } else {
+    # en caso de que tengamos ambos, comprobemos que están definidos sobre los mismos 
+    # puntos.
+    if(!missing(modas)){
+      if(!methods::is(modas, "MRpms_modas")) stop("`modas` is not an MRpms_modas object, please, use only an object result of an MRpms function package.")
+      if(attr(modas,"x.malla") != attr(malla,"x.malla")){
+        stop("`x.malla` in both `malla` object and `modas` object are not equals.
+Please, provide a `malla` object build over the same `x.malla` as `modas`.")
+        
+      }
+    }
+  }
   
   
   x.malla <- attr(malla,"x.malla")
   k <- attr(malla, "k")
   l <- attr(malla, "len")
+  n = length(Y)
   
   if(missing(modas)){
         modas <- PMSc(X,Y,malla = malla,h1 = h1,h2 = h2, p = p, eps = eps, dim = dim,
@@ -50,8 +130,8 @@ PredPMS <- function(muestra, modas, dim = ncol(muestra) -1,
   }
 
 
-  malla.aux = mallador(X,Y,x.malla = X,dim = dim)
-  aux <- sapply(1:n, function(i) unique(round(unlist(PMS1c(X = X[-i], Y = Y[-i],
+  malla.aux = mallador(X,Y,x.malla = X,dim = dim, k = k)
+  aux <- lapply(1:n, function(i) unique(round(unlist(PMS1c(X = X[-i], Y = Y[-i],
                                                                    x = malla.aux[(i-1)*k+1,1:dim],
                                                                    ymalla = malla.aux[(i-1)*k+(1:k),dim+1],
                                                                    h1 = h1, h2 = h2,eps = eps, k = k, n = n)),p-2)))
@@ -61,7 +141,7 @@ PredPMS <- function(muestra, modas, dim = ncol(muestra) -1,
   
   if(dim == 1){
     plot(X, Y)
-    ni <- sapply(modas, length)
+    ni <- lapply(modas, length)
     xg <- rep(x.malla, times = ni)
     yg <- unlist(modas)
     sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-epsh, yg[i]+epsh), col ="lightgrey", lwd = 1.5))
@@ -69,4 +149,5 @@ PredPMS <- function(muestra, modas, dim = ncol(muestra) -1,
     graphics::points(xg, yg + epsh, col = "grey", pch = 19, cex = 0.4)
     graphics::points(xg, yg, col = "red", pch = 19 )
   }
+  return(list(modas = modas, epsh = epsh))
 }

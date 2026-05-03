@@ -7,16 +7,15 @@
 PredPMS(
   muestra,
   modas,
-  dim = ncol(muestra) - 1,
-  X = muestra[, 1:dim],
-  Y = muestra[, dim + 1],
-  malla = mallador(X, Y, dim = dim),
+  x.malla,
   h1 = 0.4,
   h2 = 1,
-  n = length(Y),
   eps = 1e-08,
   p = -log(eps, base = 10),
-  conf.level = 0.95
+  conf.level = 0.95,
+  k,
+  l,
+  malla
 )
 }
 \arguments{
@@ -24,13 +23,7 @@ PredPMS(
 
 \item{modas}{List of vector which contains the modes on each covariable point of \code{malla}. In case \code{modas} missing, the function calls \code{PMSc} to compute them.}
 
-\item{dim}{Dimension of covariable.}
-
-\item{X}{Matrix of covariable data points in case \code{muestra} not present.}
-
-\item{Y}{Vector with response values in case \code{muestra} not present.}
-
-\item{malla}{Matrix of points used to compute the modes using the Partial Mean-Shift algorithm. If not provided, function calls  \code{mallador} to compute.}
+\item{x.malla}{Set of covariable points where compute the modes. Not needed if a \code{modas} object is provided.}
 
 \item{h1}{Smoothing parameter for covariables.}
 
@@ -42,7 +35,7 @@ PredPMS(
 
 \item{conf.level}{Confidence level of intervals.}
 
-\item{type}{Numerical argument. "0" to compute pointwise intervals, "1" to uniform intervals or "2" to compute both. By default, preforms both.}
+\item{malla}{Matrix of points used to compute the modes using the Partial Mean-Shift algorithm. If not provided, function calls  \code{mallador} to compute.}
 }
 \description{
 With this function, the user can preform prediction intervals for response value in each

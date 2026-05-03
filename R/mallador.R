@@ -1,6 +1,6 @@
 #' Construct a mesh compatible with MRpms functions.
 #' 
-#' Guiven a matrix with data points, or two matrix with the covariable points and response values,
+#' Given a matrix with data points, or two matrix with the covariable points and response values,
 #'  construct a mesh of points in both ways: compute ´l´ diferent equidistant `x` points and asign `k` diferent `y`
 #'  values to each ones between the nearest data points; or take a given `x` matrix of points and preforms the same construction.
 #' 
@@ -59,8 +59,11 @@ mallador <- function(X = muestra[,1:dim], Y = muestra[,dim+1],
     malla <- cbind(x.temp,y.temp)
   }
   
-  attr(malla,"len") <- len
-  attr(malla,"k") <- k
-  attr(malla, "x.malla") <- x.malla
+
+  malla <- structure(malla, 
+                      len = len,
+                      k = k,
+                      x.malla = x.malla,
+                      class = "MRpms_malla")
   return(malla = malla)
 }

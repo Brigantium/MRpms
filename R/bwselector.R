@@ -1,3 +1,5 @@
+#' @export
+
 bwselector <- function(muestra, dim = ncol(muestra)-1,
                        X = muestra[,1:dim], Y = muestra[,dim+1],
                        malla = mallador(X, Y, dim = dim, x.malla = X),
@@ -27,8 +29,8 @@ bwselector <- function(muestra, dim = ncol(muestra)-1,
   # plot(t(hs), pch = 19, col = "red", xlim=c(0,h0[1]+3*as),ylim=c(0,h0[2]+3*as)) ###
   # lines(t(cbind(hs,hs[,1])), col = "red") ###
   
-  auxX <- as.matrix(dist(X)) + max(dist(X))*diag(n)
-  auxY <- as.matrix(dist(Y)) + max(dist(Y))*diag(n)
+  auxX <- as.matrix(stats::dist(X)) + max(stats::dist(X))*diag(n)
+  auxY <- as.matrix(stats::dist(Y)) + max(stats::dist(Y))*diag(n)
   hminX <- max(apply(auxX,1,min))
   hminY <- max(apply(auxY,1,min))
   htol <- c(hminX, hminY)/2
@@ -44,7 +46,7 @@ bwselector <- function(muestra, dim = ncol(muestra)-1,
   j <- 0
   
   fbueno <- medidashs[which.min(medidashs)]
-  while(sd(medidashs)/fbueno > eps2){
+  while(stats::sd(medidashs)/fbueno > eps2){
 
     orden <- order(medidashs, decreasing = TRUE)
     bueno <- orden[nsimplex+1]
