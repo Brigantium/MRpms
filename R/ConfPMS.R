@@ -1,7 +1,8 @@
 #' Pointwise and uniform confidence sets.
 #'
 #' Computes pointwise and uniform confidence sets for conditional local modes
-#' and plots them and the estimated modes over the given sample.
+#' and plots them along with the estimated modes over the given sample, if the
+#' covariate is one-dimensional.
 #'
 #' @param muestra Matrix containing the sample.
 #'
