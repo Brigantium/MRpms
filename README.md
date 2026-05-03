@@ -1,12 +1,6 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-<!-- # MRpms -->
-
-<!-- <!-- badges: start -->
-
-–\> <!-- <!-- badges: end --> –\>
-
 <!-- The goal of MRpms is to ... -->
 
 ## Installation
@@ -14,10 +8,16 @@
 You can install the development version of MRpms from
 [GitHub](https://github.com/) with:
 
-``` r
-# install.packages("pak")
-pak::pak("Brigantium/MRpms")
-```
+    # install.packages("remotes")
+    remotes::install_github("Brigantium/MRpms")
+
+<!-- ``` r -->
+
+<!-- # install.packages("pak") -->
+
+<!-- pak::pak("Brigantium/MRpms") -->
+
+<!-- ``` -->
 
 <!-- ## Example -->
 
