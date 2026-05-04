@@ -1,3 +1,7 @@
+#' @param eps para la convergencia del PMS
+#' 
+#' @param eps2 para el criterio de parada del algoritmo heurístico (que parará cuando la diferencia de los tres puntos sea pequeña, reescalando por el mayor)
+#'
 #' @export
 
 bwselector <- function(muestra, dim = ncol(muestra)-1,
@@ -21,51 +25,63 @@ bwselector <- function(muestra, dim = ncol(muestra)-1,
   }
 
   nsimplex <- dim + 1
-  h0 <- c(max(X)-min(X),max(Y)-min(Y))/10
-  as <- min(h0)
-  qs <- as/(nsimplex)/sqrt(2)*(sqrt(nsimplex+1)-1)
-  hs <- t(rbind(h0, matrix(rep(h0 + rep(qs,nsimplex),2),byrow=TRUE,nrow=nsimplex) + diag(as/sqrt(2),nsimplex)))
+  h0 <- c(max(X)-min(X),max(Y)-min(Y))/10 # h inicial
+  as <- min(h0) # volumen inicial de simplex
+  qs <- as/(nsimplex)/sqrt(2)*(sqrt(nsimplex+1)-1) # ver paper A constraines, globalized and bound Nelder-Mead 
+  hs <- t(rbind(h0, matrix(rep(h0 + rep(qs,nsimplex),2),byrow=TRUE,nrow=nsimplex) + diag(as/sqrt(2),nsimplex))) # los otros h para construir el simplex inicial
   
   # plot(t(hs), pch = 19, col = "red", xlim=c(0,h0[1]+3*as),ylim=c(0,h0[2]+3*as)) ###
   # lines(t(cbind(hs,hs[,1])), col = "red") ###
   
-  auxX <- as.matrix(stats::dist(X)) + max(stats::dist(X))*diag(n)
+  # invención de ángel para que no podamos tener ceros en el denominador del mean shift 
+  auxX <- as.matrix(stats::dist(X)) + max(stats::dist(X))*diag(n) 
   auxY <- as.matrix(stats::dist(Y)) + max(stats::dist(Y))*diag(n)
   hminX <- max(apply(auxX,1,min))
   hminY <- max(apply(auxY,1,min))
   htol <- c(hminX, hminY)/2
+  #------------
 
+  # transformación por ser el espacio de las h acotado
   lhs <- log(hs-htol)
   
   # for(i in 1:ncol(hs)){cat("Probando h=",hs[,i],"\n")} ###
+
+  # evaluación de los h en la medida de error
   medidashs <- apply(hs, 2, medida)
   
-  lhb0 <- lhs[,which.min(medidashs)]
+  # tomamos el mejor
+  bueno <- which.min(medidashs)
+  lhb0 <- lhs[,bueno]
 
-  it <- 0
-  j <- 0
   
-  fbueno <- medidashs[which.min(medidashs)]
-  while(stats::sd(medidashs)/fbueno > eps2){
+  it <- 0
+  j <- 0 # número de iteraciones sin mejorar
+  
+  fbueno <- medidashs[bueno]  # evaluación de la medida en el mejor
+  while(stats::sd(medidashs)/fbueno > eps2){ # condición de parada: que la desviación típica reescalada por el mejor de los puntos sea menor a un cierto épsilon pes2
 
+    # buscamos el mejor, el peor y el segundo peor (feo)
     orden <- order(medidashs, decreasing = TRUE)
     bueno <- orden[nsimplex+1]
     feo <- orden[2]
     malo <- orden[1]
 
+    # el punto en si asociado al malo
     xmalo <- lhs[,malo]
 
+    # los valores de dichos puntos 
     fbueno <- medidashs[bueno]
     ffeo <- medidashs[feo]
     fmalo <- medidashs[malo]
 
+    # calculamos el punto medio de todos los puntos menos el peor
     x0 <- rowMeans(lhs[,-malo])
 
     xr <- 2*x0 - xmalo
     # cat("Probando h=",exp(xr)+htol,"\n") ###
     fxr <- medida(exp(xr)+htol)
 
-    if(fxr >= ffeo){ # Contraction
+    if(fxr >= ffeo){             # Contraction
       if(fxr < fmalo){
         xc <- (x0+xr)/2
         # cat("Probando h=",exp(xc)+htol,"\n") ###
@@ -73,7 +89,7 @@ bwselector <- function(muestra, dim = ncol(muestra)-1,
         if(fxc < fxr){
           lhs[,malo] <- xc
           medidashs[malo] <- fxc
-        }else{ # Shrink
+        }else{                   # Shrink
           xbueno <- lhs[,bueno]
           lhs[,-bueno] <- apply(lhs[,-bueno], 2, function(x) (x + xbueno)/2)
           # for(i in (1:ncol(lhs))[-bueno]){
@@ -98,10 +114,10 @@ bwselector <- function(muestra, dim = ncol(muestra)-1,
         }
       }
     }else{
-      if(fxr >= fbueno){ # Reflection
+      if(fxr >= fbueno){            # Reflection
         lhs[,malo] <- xr
         medidashs[malo] <- fxr
-      }else{ # Expansion
+      }else{                        # Expansion
         xe <- 2*xr - x0
         # cat("Probando h=",exp(xe)+htol,"\n") ###
         fxe <- medida(exp(xe)+htol)

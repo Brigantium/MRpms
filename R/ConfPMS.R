@@ -42,7 +42,7 @@
 ConfPMS <- function(muestra = cbind(X,Y), modas,  
                     malla, h1 = 0.3, h2 = 0.5, 
                     eps = 1e-8, p = floor(-log(eps, base = 10)),
-                    k , l,
+                    k  = 5, l = 100,
                     conf.level=0.95, B=500, type = 2,
                     seed = 2026){
                       
@@ -80,13 +80,16 @@ ConfPMS <- function(muestra = cbind(X,Y), modas,
   }
 
   # comprobar si recibimos una muestra válida
+  if(missing(muestra)){
+    stop("There is no sample data provided. Missing `muestra` matrix")
+  } else {
 
   # comprobamos si de hecho es una matriz o array
-  if((!methods::is(muestra,"array") & !methods::is(muestra,"matrix")) | typeof(muestra) != "double" ){
-    stop("`muestra` argument is not a numeric matrix nor an array.")
+    if((!methods::is(muestra,"array") & !methods::is(muestra,"matrix")) | typeof(muestra) != "double" ){
+      stop("`muestra` argument is not a numeric matrix nor an array.")
     
+    }
   }
-  
   
   # calculamos la dimensión de la covariable
   dim = ncol(muestra) - 1
