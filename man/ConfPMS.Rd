@@ -2,20 +2,17 @@
 % Please edit documentation in R/ConfPMS.R
 \name{ConfPMS}
 \alias{ConfPMS}
-\title{Pointwise and uniform confidence sets.}
+\title{Pointwise and uniform confidence sets}
 \usage{
 ConfPMS(
-  muestra = cbind(X, Y),
-  X = muestra[, 1:dim],
-  Y = muestra[, dim + 1],
+  muestra,
   modas,
   malla,
   h1 = 0.3,
   h2 = 0.5,
   eps = 1e-08,
-  p = floor(-log(eps, base = 10)),
   k = 10,
-  l = 200,
+  len = 200,
   conf.level = 0.95,
   B = 500,
   type = 2,
@@ -24,10 +21,6 @@ ConfPMS(
 }
 \arguments{
 \item{muestra}{Matrix containing the sample.}
-
-\item{X}{Matrix containing values of the covariates in case \code{muestra} is not present.}
-
-\item{Y}{Vector containing values of the response variable in case \code{muestra} is not present.}
 
 \item{modas}{List containing the estimated set of conditional local modes
 on each covariate point in \code{malla}. In case \code{modas} missing,
@@ -41,30 +34,39 @@ using the Partial Mean-Shift algorithm. If not provided,
 
 \item{h2}{Smoothing parameter for response variable.}
 
-\item{eps}{Convergence tolerance and threshold to discriminate between modes.}
-
-\item{p}{Number of decimal digits considered when discriminating modes.}
+\item{eps}{PMS convergence tolerance.}
 
 \item{k}{Number of Y values per x point in the \code{malla} object created.}
 
-\item{l}{Number of different X points in the \code{malla} object.}
+\item{len}{Number of different X points in the \code{malla} object.}
 
 \item{conf.level}{Confidence level for the sets.}
 
-\item{B}{Number of \emph{bootstrap} simulations computed to approximate the confidence sets.}
+\item{B}{Number of \emph{bootstrap} replications computed to estimate
+the confidence sets.}
 
-\item{type}{Numerical argument. "0" means computing pointwise sets only, "1" for uniform sets only and "2" for both. Set to "2" by default.}
+\item{type}{Numerical argument. "0" means computing pointwise sets only,
+"1" for uniform sets only and "2" for both. Set to "2" by default.}
 
-\item{seed}{Seed used to generate the \emph{bootstrap} simulations.}
+\item{seed}{Seed for the \emph{bootstrap} simulations.}
 }
 \value{
 A list. First entry is a list containing the estimated set of
 conditional local modes for each \code{x} point in the \code{malla}. If \code{type} is 0 or 2,
 returns a vector with the estimated pointwise errors (\code{deltax}).
-If \code{type} is 1 or 2, returns the estimated uniform error (\code{delta})\code{.}
+If \code{type} is 1 or 2, returns the estimated uniform error (\code{delta}).
 }
 \description{
 Computes pointwise and uniform confidence sets for conditional local modes
-and plots them along with the estimated modes over the given sample, if the
-covariate is one-dimensional.
+and plots them along with the estimated modes over the given sample.
+(Warning: a large number of bootstrap replications increases execution time).
+}
+\examples{
+system.time(conf <- ConfPMS(Ejemplo1, B = 10))
+
+
+}
+\references{
+Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
+Nonparametric modal regression. The Annals of Statistics, 44(2), 489--514.
 }

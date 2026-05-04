@@ -2,44 +2,35 @@
 % Please edit documentation in R/mallador.R
 \name{mallador}
 \alias{mallador}
-\title{Constructs a mesh compatible with MRpms functions.}
+\title{Constructs a mesh compatible with MRpms functions}
 \usage{
-mallador(
-  X = muestra[, 1:dim],
-  Y = muestra[, dim + 1],
-  k = 10,
-  len = 100,
-  muestra = cbind(X, Y),
-  dim = 1,
-  x.malla
-)
+mallador(muestra, k = 10, len = 200, x.malla)
 }
 \arguments{
-\item{X}{Matrix containing covariates.}
-
-\item{Y}{Vector containing the response variable.}
+\item{muestra}{Matrix containing the sample.}
 
 \item{k}{Number of \code{y} values for each \code{x} point in the new mesh.}
 
 \item{len}{Number of different \code{x} points in the new mesh.}
 
-\item{muestra}{Matrix containing the sample.}
-
-\item{dim}{Dimension of the covariate.}
-
 \item{x.malla}{Matrix of \code{x} points given by user.}
 }
 \value{
-A matrix coontaining the points of the new mesh.
+A matrix containing the points of the new mesh.
 Each \code{x} point is repeated \code{k} times, each one with an associated \code{y} value.
 This matrix has three attributes: \code{len}, \code{k} and \code{x.malla}, the last of which
 is a matrix containing the different \code{x} points in the mesh.
 }
 \description{
-Given a matrix containing the sample, or two matrices containing
-covariates and response variable, constructs a mesh.
+Given a matrix containing the sample, constructs a mesh.
 This can be done in two ways: either computing \code{l} different equidistant \code{x}
 points and assigning \code{k} different \code{y} values to each one,
 chosen in a k nearest neighbors fashion or, if given a matrix of \code{x}
 points (\code{x.malla}), performing the same construction over them.
+}
+\examples{
+malla <- mallador(Ejemplo1)
+plot(Ejemplo1)
+points(malla, pch = 19, cex = 0.8)
+
 }

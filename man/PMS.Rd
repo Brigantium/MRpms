@@ -2,17 +2,16 @@
 % Please edit documentation in R/PMSr.R
 \name{PMS}
 \alias{PMS}
-\title{Performs modal regression}
+\title{Partial Mean-Shift Algorithm}
 \usage{
 PMS(
   muestra,
   x.malla = NULL,
-  h1 = 0.5,
-  h2 = 1,
+  h1 = 0.3,
+  h2 = 0.5,
   eps = 1e-08,
-  p = floor(-log(eps, base = 10)),
   k = 10,
-  l = 200,
+  len = 200,
   malla = NULL
 )
 }
@@ -25,13 +24,11 @@ PMS(
 
 \item{h2}{Smoothing parameter for response variable.}
 
-\item{eps}{Convergence tolerance and threshold to discriminate between modes.}
-
-\item{p}{Number of decimal digits considered when discriminating modes.}
+\item{eps}{Convergence tolerance.}
 
 \item{k}{Number of Y values per x point in the \code{malla} object created.}
 
-\item{l}{Number of different X points in the \code{malla} object.}
+\item{len}{Number of different X points in the \code{malla} object.}
 
 \item{malla}{Matrix containing the initial points used to compute the modes
 with the Partial Mean-Shift algorithm. If not provided,
@@ -42,6 +39,18 @@ A list containing the estimated local modes conditional on the values
 of the covariate appearing in \code{x.malla}. In addition, \code{x.malla} is returned as an attribute.
 }
 \description{
-Given sample with one-dimensional covariate, performs modal regression
-on a given set of covariate values.
+Finds the local modes of \code{muestra} conditional on a given set of covariate values.
+}
+\examples{
+modas <- PMS(Ejemplo1)
+plot(Ejemplo1)
+ni <- lapply(modas, length)
+xg <- rep(attr(modas, "x.malla"), times = ni)
+yg <- unlist(modas)
+points(xg, yg, col = "red", pch = 19)
+
+}
+\references{
+Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
+Nonparametric modal regression. The Annals of Statistics, 44(2), 489--514.
 }
