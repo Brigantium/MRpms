@@ -14,7 +14,7 @@ ConfPMS(
   k = 10,
   len = 200,
   conf.level = 0.95,
-  B = 500,
+  B = 30,
   type = 2,
   seed = 2026
 )

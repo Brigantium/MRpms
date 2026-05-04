@@ -51,7 +51,7 @@
 
 
 ConfPMS <- function(muestra, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
-                    k = 10, len = 200, conf.level = 0.95, B = 500, type = 2,
+                    k = 10, len = 200, conf.level = 0.95, B = 30, type = 2,
                     seed = 2026){
 
 
