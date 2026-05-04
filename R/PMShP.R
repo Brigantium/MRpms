@@ -8,11 +8,6 @@ PMS.hP <- function(muestra, dim = ncol(muestra)-1,
   # paso = if(dim==1) .pasoU else .pasoM
   Hs <- cbind(rep(hs.x, times = length(hs.y)),rep(hs.y, each = length(hs.x)))
   
-  mallau <- mallador(X, Y, k = ku, len = lu, dim = dim)
-  ku <- attr(mallau,"k")
-  lu <- attr(mallau, "len")
-  xxu <- matrix(attr(mallau, "x.malla"), ncol = dim)
-  pasoxxu <- xxu[2] - xxu[1]
   n <- length(Y)
   mu <- nrow(mallau)
   

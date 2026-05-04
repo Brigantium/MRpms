@@ -75,11 +75,16 @@ PredPMS <- function(muestra, modas,
   }
 
   # comprobar si recibimos una muestra válida
+  if(missing(muestra)){
+    stop("There is no sample data provided. Missing `muestra` matrix")
+  } else {
 
-  # comprobamos si de hecho es una matriz o array
-  if((!methods::is(muestra,"array") & !methods::is(muestra,"matrix")) | typeof(muestra) != "double" ){
-    stop("`muestra` argument is neither a numeric matrix nor an array.")
 
+    # comprobamos si de hecho es una matriz o array
+    if((!methods::is(muestra,"array") & !methods::is(muestra,"matrix")) | typeof(muestra) != "double" ){
+      stop("`muestra` argument is not a numeric matrix nor an array.")
+
+    }
   }
 
 
