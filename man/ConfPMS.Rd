@@ -2,18 +2,20 @@
 % Please edit documentation in R/ConfPMS.R
 \name{ConfPMS}
 \alias{ConfPMS}
-\title{Pointwise and uniform confidence intervals.}
+\title{Pointwise and uniform confidence sets.}
 \usage{
 ConfPMS(
   muestra = cbind(X, Y),
+  X = muestra[, 1:dim],
+  Y = muestra[, dim + 1],
   modas,
   malla,
   h1 = 0.3,
   h2 = 0.5,
   eps = 1e-08,
   p = floor(-log(eps, base = 10)),
-  k,
-  l,
+  k = 10,
+  l = 200,
   conf.level = 0.95,
   B = 500,
   type = 2,
@@ -21,40 +23,48 @@ ConfPMS(
 )
 }
 \arguments{
-\item{muestra}{Matrix which contains the data points.}
+\item{muestra}{Matrix containing the sample.}
 
-\item{modas}{List of vector which contains the modes on each covariable point of \code{malla}. In case \code{modas} missing, the function calls \code{PMSc} to compute them. It must be an special class object MRpms_modas.}
+\item{X}{Matrix containing values of the covariates in case \code{muestra} is not present.}
 
-\item{malla}{Matrix of points used to compute the modes using the Partial Mean-Shift algorithm. If not provided, function calls  \code{mallador} to compute. It must be an special class object MRpms_malla.}
+\item{Y}{Vector containing values of the response variable in case \code{muestra} is not present.}
 
-\item{h1}{Smoothing parameter for covariables.}
+\item{modas}{List containing the estimated set of conditional local modes
+on each covariate point in \code{malla}. In case \code{modas} missing,
+\code{PMSc}is called to compute them. It must be a MRpms_modas class object.}
+
+\item{malla}{Matrix containing the initial points used to compute the modes
+using the Partial Mean-Shift algorithm. If not provided,
+\code{mallador}function is called. It must be a MRpms_malla class object.}
+
+\item{h1}{Smoothing parameter for covariates.}
 
 \item{h2}{Smoothing parameter for response variable.}
 
-\item{eps}{Tolerance of convergence and minimum diference between modes.}
+\item{eps}{Convergence tolerance and threshold to discriminate between modes.}
 
-\item{p}{Number of significance digits considered to diference modes.}
+\item{p}{Number of decimal digits considered when discriminating modes.}
 
-\item{k}{Number of Y values per x value in the \code{malla} object created, if \code{malla} is not provided.}
+\item{k}{Number of Y values per x point in the \code{malla} object created.}
 
-\item{l}{Number of X diferent points computed in the \code{malla} object.}
+\item{l}{Number of different X points in the \code{malla} object.}
 
-\item{conf.level}{Confidence level of intervals.}
+\item{conf.level}{Confidence level for the sets.}
 
-\item{B}{Number of \emph{bootstrap} simulations to compute the confidence intervals.}
+\item{B}{Number of \emph{bootstrap} simulations computed to approximate the confidence sets.}
 
-\item{type}{Numerical argument. "0" to compute pointwise intervals, "1" to uniform intervals or "2" to compute both. By default, preforms both.}
+\item{type}{Numerical argument. "0" means computing pointwise sets only, "1" for uniform sets only and "2" for both. Set to "2" by default.}
 
-\item{seed}{Seed to generate the \emph{bootstrap} simulations.}
-
-\item{X}{Matrix of covariable data points in case \code{muestra} not present.}
-
-\item{Y}{Vector with response values in case \code{muestra} not present.}
+\item{seed}{Seed used to generate the \emph{bootstrap} simulations.}
 }
 \value{
-A list. In all three cases of \code{type} values, firts entry is a list with all modes estimated. If \code{type} is 0,
-returns a vector with every pointwise ratios too; if \code{type} is 1 returns the uniform ratio.
+A list. First entry is a list containing the estimated set of
+conditional local modes for each \code{x} point in the \code{malla}. If \code{type} is 0 or 2,
+returns a vector with the estimated pointwise errors (\code{deltax}).
+If \code{type} is 1 or 2, returns the estimated uniform error (\code{delta})\code{.}
 }
 \description{
-Compute pointwise and uniform confidence intervals to each mode. Besides, plot both confidence intervales and data points.
+Computes pointwise and uniform confidence sets for conditional local modes
+and plots them along with the estimated modes over the given sample, if the
+covariate is one-dimensional.
 }

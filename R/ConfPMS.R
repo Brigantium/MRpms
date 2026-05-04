@@ -26,7 +26,7 @@
 #'
 #' @param eps Convergence tolerance and threshold to discriminate between modes.
 #'
-#' @param p Number of decimal digits considered to discriminate different modes.
+#' @param p Number of decimal digits considered when discriminating modes.
 #'
 #' @param conf.level Confidence level for the sets.
 #'
@@ -39,9 +39,9 @@
 #' @param l Number of different X points in the `malla` object.
 #'
 #' @return A list. First entry is a list containing the estimated set of
-#' conditional local modes for each point in the `malla`. If `type` is 0 or 2,
-#' returns a vector with the estimated pointwise errors (element `deltax`).
-#' If `type` is 1 or 2, returns the estimated uniform error (element `delta`)`.`
+#' conditional local modes for each `x` point in the `malla`. If `type` is 0 or 2,
+#' returns a vector with the estimated pointwise errors (`deltax`).
+#' If `type` is 1 or 2, returns the estimated uniform error (`delta`)`.`
 #'
 #'
 #' @export
@@ -61,7 +61,7 @@ ConfPMS <- function(muestra = cbind(X,Y),
   }
 
 
-  if(!methods::is(h2,"numeric")| h2<=0){
+  if(!methods::is(h2,"numeric")| sum(h2<=0) | length(h2)!=1){
     stop("Bandwidth for response estimator `h2` is not a positive (>0) numeric value.")
 
   }
@@ -90,7 +90,7 @@ ConfPMS <- function(muestra = cbind(X,Y),
   # comprobar si recibimos una muestra válida
 
   # comprobamos si de hecho es una matriz o array
-  if((!methods::is(muestra,"array") & !methods::is(muestra,"matrix")) | typeof(muestra) != "double" ){
+  if((!methods::is(muestra,"array") & !methods::is(muestra,"matrix")) | typeof(muestra) != "double" ){q
     stop("`muestra` argument is not a numeric matrix nor an array.")
 
   }

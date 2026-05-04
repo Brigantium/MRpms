@@ -2,7 +2,7 @@
 % Please edit documentation in R/mallador.R
 \name{mallador}
 \alias{mallador}
-\title{Construct a mesh compatible with MRpms functions.}
+\title{Constructs a mesh compatible with MRpms functions.}
 \usage{
 mallador(
   X = muestra[, 1:dim],
@@ -15,27 +15,31 @@ mallador(
 )
 }
 \arguments{
-\item{X}{Matrix with covariable data points.}
+\item{X}{Matrix containing covariates.}
 
-\item{Y}{Vector with response variable data values.}
+\item{Y}{Vector containing the response variable.}
 
 \item{k}{Number of \code{y} values for each \code{x} point in the new mesh.}
 
-\item{len}{Number of diferent \code{x} points in the new mesh.}
+\item{len}{Number of different \code{x} points in the new mesh.}
 
-\item{muestra}{Matrix with data points.}
+\item{muestra}{Matrix containing the sample.}
 
-\item{dim}{Dimension of covariable.}
+\item{dim}{Dimension of the covariate.}
 
 \item{x.malla}{Matrix of \code{x} points given by user.}
 }
 \value{
-A matrix with the new mesh. Each \code{x} point is repeated \code{k} times, each one with
-their associated \code{y} value. Besides, the matrix have three attributes: \code{l}, \code{k} and \code{x.malla}
-which contains a matrix with the diferents \code{x} points.
+A matrix coontaining the points of the new mesh.
+Each \code{x} point is repeated \code{k} times, each one with an associated \code{y} value.
+This matrix has three attributes: \code{len}, \code{k} and \code{x.malla}, the last of which
+is a matrix containing the different \code{x} points in the mesh.
 }
 \description{
-Given a matrix with data points, or two matrix with the covariable points and response values,
-construct a mesh of points in both ways: compute ´l´ diferent equidistant \code{x} points and asign \code{k} diferent \code{y}
-values to each ones between the nearest data points; or take a given \code{x} matrix of points and preforms the same construction.
+Given a matrix containing the sample, or two matrices containing
+covariates and response variable, constructs a mesh.
+This can be done in two ways: either computing \code{l} different equidistant \code{x}
+points and assigning \code{k} different \code{y} values to each one,
+chosen in a k nearest neighbors fashion or, if given a matrix of \code{x}
+points (\code{x.malla}), performing the same construction over them.
 }

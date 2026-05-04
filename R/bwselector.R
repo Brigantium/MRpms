@@ -1,10 +1,23 @@
+#' @param muestra
+#'
+#' @param dim
+#' @param X
+#' @param Y
+#' @param malla
+#' @param eps
+#' @param p
+#' @param nivel
+#' @param metodo
+#' @param n
+#' @param eps2
+#'
 #' @export
 
 bwselector <- function(muestra, dim = ncol(muestra)-1,
                        X = muestra[,1:dim], Y = muestra[,dim+1],
                        malla = mallador(X, Y, dim = dim, x.malla = X),
                        eps = 1e-8, p = floor(-log(eps, base = 10)),
-                       nivel = 0.95, metodo="CV", n = length(Y), 
+                       nivel = 0.95, metodo="CV", n = length(Y),
                        eps2 = 1e-3){
 
   if(metodo == "P"){
@@ -12,9 +25,9 @@ bwselector <- function(muestra, dim = ncol(muestra)-1,
     lensopx <- max(X) - min(X)
     medida <- function(h){hP(X = X, Y = Y, malla = malla, dim = dim,
                                   h1 = h[1], h2 = h[2], eps = eps, p = p,
-                                  n = n, nivel = nivel, k = k, 
+                                  n = n, nivel = nivel, k = k,
                                   lensopx = lensopx)}
-    
+
   }else{
     medida <- function(h){CVC(X = X, Y = Y, malla = malla, dim = dim,
                               h1 = h[1], h2 = h[2], p = p, eps = eps, n = n)}
@@ -25,10 +38,10 @@ bwselector <- function(muestra, dim = ncol(muestra)-1,
   as <- min(h0)
   qs <- as/(nsimplex)/sqrt(2)*(sqrt(nsimplex+1)-1)
   hs <- t(rbind(h0, matrix(rep(h0 + rep(qs,nsimplex),2),byrow=TRUE,nrow=nsimplex) + diag(as/sqrt(2),nsimplex)))
-  
+
   # plot(t(hs), pch = 19, col = "red", xlim=c(0,h0[1]+3*as),ylim=c(0,h0[2]+3*as)) ###
   # lines(t(cbind(hs,hs[,1])), col = "red") ###
-  
+
   auxX <- as.matrix(stats::dist(X)) + max(stats::dist(X))*diag(n)
   auxY <- as.matrix(stats::dist(Y)) + max(stats::dist(Y))*diag(n)
   hminX <- max(apply(auxX,1,min))
@@ -36,15 +49,15 @@ bwselector <- function(muestra, dim = ncol(muestra)-1,
   htol <- c(hminX, hminY)/2
 
   lhs <- log(hs-htol)
-  
+
   # for(i in 1:ncol(hs)){cat("Probando h=",hs[,i],"\n")} ###
   medidashs <- apply(hs, 2, medida)
-  
+
   lhb0 <- lhs[,which.min(medidashs)]
 
   it <- 0
   j <- 0
-  
+
   fbueno <- medidashs[which.min(medidashs)]
   while(stats::sd(medidashs)/fbueno > eps2){
 
@@ -114,7 +127,7 @@ bwselector <- function(muestra, dim = ncol(muestra)-1,
         }
       }
     }
-    
+
     # plot(t(exp(lhs)+htol), pch = 19, col = "red", xlim=c(0,h0[1]+3*as),ylim=c(0,h0[2]+3*as)) ###
     # lines(t(exp(cbind(lhs,lhs[,1]))+htol), col = "red") ###
 
@@ -125,9 +138,9 @@ bwselector <- function(muestra, dim = ncol(muestra)-1,
     if(sqrt(sum(((exp(lhb)-exp(lhb0))/exp(lhb))^2)) < eps2){j <- j+1}else{j <- 0}
     if(j == 10){break}
     lhb0 <- lhb
-    
+
     # cat("Desv. Típica=",sd(medidashs),", it=",it,", j=",j,"\n") ###
-    
+
   }
 
   return(exp(lhs[,which.min(medidashs)])+htol)

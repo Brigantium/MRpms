@@ -2,43 +2,46 @@
 % Please edit documentation in R/PMSr.R
 \name{PMS}
 \alias{PMS}
-\title{Function to performs modal regression}
+\title{Performs modal regression}
 \usage{
 PMS(
   muestra,
-  x.malla,
+  x.malla = NULL,
   h1 = 0.5,
   h2 = 1,
+  eps = 1e-08,
   p = floor(-log(eps, base = 10)),
-  eps = 10^(-p),
-  k,
-  l,
-  malla
+  k = 10,
+  l = 200,
+  malla = NULL
 )
 }
 \arguments{
-\item{muestra}{Matrix which contains the data points.}
+\item{muestra}{Matrix containing the sample.}
 
-\item{x.malla}{Set of covariable points where compute the modes.}
+\item{x.malla}{Set of covariate points where the modes will be estimated.}
 
-\item{h1}{Smoothing parameter for covariables.}
+\item{h1}{Smoothing parameter for covariates.}
 
 \item{h2}{Smoothing parameter for response variable.}
 
-\item{p}{Number of significance digits considered to diference modes.}
+\item{eps}{Convergence tolerance and threshold to discriminate between modes.}
 
-\item{eps}{Tolerance of convergence and minimum diference between modes.}
+\item{p}{Number of decimal digits considered when discriminating modes.}
 
-\item{k}{Number of Y values per x value in the \code{malla} object created, if \code{malla} is not provided.}
+\item{k}{Number of Y values per x point in the \code{malla} object created.}
 
-\item{l}{Number of X diferent points computed in the \code{malla} object.}
+\item{l}{Number of different X points in the \code{malla} object.}
 
-\item{malla}{Matrix of points used to compute the modes using the Partial Mean-Shift algorithm. If not provided, function calls  \code{mallador} to compute.}
+\item{malla}{Matrix containing the initial points used to compute the modes
+with the Partial Mean-Shift algorithm. If not provided,
+\code{mallador}function is called. It must be a MRpms_malla class object.}
 }
 \value{
-The function returns a list of \code{l} entries, each of one contains the modes estimated in each \code{x.malla}. In addition, \code{x.malla} is returned as attribute.
+A list containing the estimated local modes conditional on the values
+of the covariate appearing in \code{x.malla}. In addition, \code{x.malla} is returned as an attribute.
 }
 \description{
-This function performs modal regression over a given sample of unidimensional, in future multidimensional, covariable, using a
-given set of points where estimate.
+Given sample with one-dimensional covariate, performs modal regression
+on a given set of covariate values.
 }
