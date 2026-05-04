@@ -1,13 +1,14 @@
-#' @param muestra
-#'
-#' @param dim
-#' @param X
-#' @param Y
-#' @param malla
-#' @param p
-#' @param nivel
-#' @param metodo
-#' @param n
+#' Selector of window
+#  ' @param muestra
+# '
+# ' @param dim
+# ' @param X
+# ' @param Y
+# ' @param malla
+# ' @param p
+# ' @param nivel
+# ' @param metodo
+# ' @param n
 #' @param eps para la convergencia del PMS
 #' @param eps2 para el criterio de parada del algoritmo heurístico (que parará cuando la diferencia de los tres puntos sea pequeña, reescalando por el mayor)
 #'

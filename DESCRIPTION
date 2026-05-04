@@ -3,7 +3,7 @@ Title: Preforms unidimensional and multidimensional modal regression based in th
 Version: 0.8.6.000
 Authors@R: c(
     person("Iker", "Rodríguez Rodríguez", , "iker.rodriguez.rodriguez@rai.usc.es", role = c("aut", "cre")),
-    person("Ángel Antonio", "Pérez Balo", , "angelantonio.perez@rai.usc.es", role = c("aut", "cre")))
+    person("Ángel Antonio", "Pérez Balo", , "angelantonio.perez@rai.usc.es", role = c("aut")))
 Description: What the package does (one paragraph).
 License: GPL (>= 3)
 Encoding: UTF-8
