@@ -9,11 +9,11 @@
 Preforms unidimensional and multidimensional modal regression based in the Partial Mean-Shift algorithm.
 }
 \author{
-\strong{Maintainer}: Iker iker.rodriguez.rodriguez@rai.usc.es Rodríguez Rodríguez
+\strong{Maintainer}: Iker Rodríguez Rodríguez \email{iker.rodriguez.rodriguez@rai.usc.es}
 
 Authors:
 \itemize{
-  \item Ángel Antonio angelantonio.perez@rai.usc.es Pérez Balo
+  \item Ángel Antonio Pérez Balo \email{angelantonio.perez@rai.usc.es}
 }
 
 }

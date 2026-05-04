@@ -24,6 +24,32 @@ You can install the development version of MRpms from [GitHub](https://github.co
 remotes::install_github("Brigantium/MRpms")
 ```
 
+## About this package
+
+The main goal of this package is to preforms modal regression over data sets with, as to date, unidimensional covariable. That is: to detect modes of the response variable $Y$'s distribution conditional to $X = x$, where $X$ is the covaribale. \newline 
+
+<!-- incluir aquí varias de las referencias o, incluso, nuestro propio paper -->
+
+The basic function included in this package is `PMS`, which preforms the estimaton over a given matrix sample:
+
+```{r}
+library(MRpms)
+data(twosines) # a data set with two sines shifted by 3 and a normal error of sd = 0.3 
+modas <- PMS(twosines, h1 = 0.5, h2 = 0.5) 
+plot(twosines) 
+plot(modas, pch = 19, col = 2)
+
+```
+
+
+In addition, is possible to compute confidence regions too:
+
+```{r}
+
+ConfPMS(muestra, modas = modas, h1 = 0.5, h2 = 0.5, B = 10)
+
+```
+
 <!-- ``` r -->
 <!-- # install.packages("pak") -->
 <!-- pak::pak("Brigantium/MRpms") -->
