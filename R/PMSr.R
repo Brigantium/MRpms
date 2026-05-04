@@ -1,7 +1,6 @@
-#' Performs modal regression
+#' Partial Mean-Shift Algorithm
 #'
-#' Given sample with one-dimensional covariate, performs modal regression
-#' on a given set of covariate values.
+#' Finds the local modes of `muestra` conditional on a given set of covariate values.
 #'
 #' @param muestra Matrix containing the sample.
 #'
@@ -11,13 +10,11 @@
 #'
 #' @param h2 Smoothing parameter for response variable.
 #'
-#' @param eps Convergence tolerance and threshold to discriminate between modes.
-#'
-#' @param p Number of decimal digits considered when discriminating modes.
+#' @param eps Convergence tolerance.
 #'
 #' @param k Number of Y values per x point in the `malla` object created.
 #'
-#' @param l Number of different X points in the `malla` object.
+#' @param len Number of different X points in the `malla` object.
 #'
 #' @param malla Matrix containing the initial points used to compute the modes
 #' with the Partial Mean-Shift algorithm. If not provided,
@@ -26,11 +23,22 @@
 #' @return A list containing the estimated local modes conditional on the values
 #'  of the covariate appearing in `x.malla`. In addition, `x.malla` is returned as an attribute.
 #'
+#' @references
+#' Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
+#' Nonparametric modal regression. The Annals of Statistics, 44(2), 489--514.
+#'
+#' @examples
+#' modas <- PMS(Ejemplo1)
+#' plot(Ejemplo1)
+#' ni <- lapply(modas, length)
+#' xg <- rep(attr(modas, "x.malla"), times = ni)
+#' yg <- unlist(modas)
+#' points(xg, yg, col = "red", pch = 19)
+#'
 #' @export
 
 PMS <- function(muestra, x.malla = NULL,
-                h1 = 0.5, h2 = 1, eps = 1e-8,
-                p = floor(-log(eps,base = 10)), k = 10 , l = 200,
+                h1 = 0.3, h2 = 0.5, eps = 1e-8, k = 10 , len = 200,
                 malla = NULL){
 
 
@@ -43,10 +51,11 @@ PMS <- function(muestra, x.malla = NULL,
 
   }
 
-  if(!methods::is(p,"numeric")){
-    stop("Precision must be a one-dimensional numeric value.")
-  }
-  p = floor(abs(p))
+  # if(!methods::is(p,"numeric")){
+  #   stop("Precision must be a one-dimensional numeric value.")
+  # }
+  # p = floor(abs(p))
+  p = floor(-log(eps,base = 10))
 
   if(!methods::is(k,"numeric")){
     stop("The number of initial Y values per x.malla point must be a one-dimensional integer value.")
@@ -93,8 +102,8 @@ PMS <- function(muestra, x.malla = NULL,
     # }
     # if (!missing(x.malla)) malla = mallador(muestra[,1:dim], muestra[,dim+1],dim = dim, k = k, x.malla = x.malla)
     if (!is.null(x.malla)){
-      malla = mallador(muestra[,1:dim], muestra[,dim+1],dim = dim, k = k, x.malla = x.malla)
-    }else malla = mallador(muestra[,1:dim], muestra[,dim+1],dim = dim, k = k, len = l)
+      malla = mallador(muestra, k = k, x.malla = x.malla)
+    }else malla = mallador(muestra, k = k, len = len)
     # if (!missing(l)) malla = mallador(muestra[,1:dim], muestra[,dim+1],dim = dim, k = k, len = l)
   }
 
@@ -105,7 +114,7 @@ PMS <- function(muestra, x.malla = NULL,
 
   # realizamos la estimación de las modas
   modas <- PMSc(muestra[,1:dim], muestra[,dim+1], malla = malla,h1 = h1,h2 = h2, p = p, eps = eps, dim = dim,
-                           n = n, k = k, l = l)
+                           n = n, k = k, len = len)
 
 
   modas <- structure(modas,

@@ -1,14 +1,10 @@
-#' Pointwise and uniform confidence sets.
+#' Pointwise and uniform confidence sets
 #'
 #' Computes pointwise and uniform confidence sets for conditional local modes
-#' and plots them along with the estimated modes over the given sample, if the
-#' covariate is one-dimensional.
+#' and plots them along with the estimated modes over the given sample.
+#' (Warning: a large number of bootstrap replications increases execution time).
 #'
 #' @param muestra Matrix containing the sample.
-#'
-#' @param X Matrix containing values of the covariates in case `muestra` is not present.
-#'
-#' @param Y Vector containing values of the response variable in case `muestra` is not present.
 #'
 #' @param modas List containing the estimated set of conditional local modes
 #' on each covariate point in `malla`. In case `modas` missing,
@@ -22,36 +18,40 @@
 #'
 #' @param h2 Smoothing parameter for response variable.
 #'
-#' @param type Numerical argument. "0" means computing pointwise sets only, "1" for uniform sets only and "2" for both. Set to "2" by default.
-#'
-#' @param eps Convergence tolerance and threshold to discriminate between modes.
-#'
-#' @param p Number of decimal digits considered when discriminating modes.
-#'
-#' @param conf.level Confidence level for the sets.
-#'
-#' @param B Number of _bootstrap_ simulations computed to approximate the confidence sets.
-#'
-#' @param seed Seed used to generate the _bootstrap_ simulations.
+#' @param eps PMS convergence tolerance.
 #'
 #' @param k Number of Y values per x point in the `malla` object created.
 #'
-#' @param l Number of different X points in the `malla` object.
+#' @param len Number of different X points in the `malla` object.
+#'
+#' @param conf.level Confidence level for the sets.
+#'
+#' @param B Number of _bootstrap_ replications computed to estimate
+#' the confidence sets.
+#'
+#' @param type Numerical argument. "0" means computing pointwise sets only,
+#' "1" for uniform sets only and "2" for both. Set to "2" by default.
+#'
+#' @param seed Seed for the _bootstrap_ simulations.
 #'
 #' @return A list. First entry is a list containing the estimated set of
 #' conditional local modes for each `x` point in the `malla`. If `type` is 0 or 2,
 #' returns a vector with the estimated pointwise errors (`deltax`).
-#' If `type` is 1 or 2, returns the estimated uniform error (`delta`)`.`
+#' If `type` is 1 or 2, returns the estimated uniform error (`delta`).
+#'
+#' @references
+#' Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
+#' Nonparametric modal regression. The Annals of Statistics, 44(2), 489--514.
+#'
+#' @examples
+#' system.time(conf <- ConfPMS(Ejemplo1, B = 10))
 #'
 #'
 #' @export
 
 
-ConfPMS <- function(muestra = cbind(X,Y),
-                    X = muestra[,1:dim], Y = muestra[,dim+1],
-                    modas, malla, h1 = 0.3, h2 = 0.5,
-                    eps = 1e-8, p = floor(-log(eps, base = 10)),
-                    k = 10, l = 200, conf.level = 0.95, B = 500, type = 2,
+ConfPMS <- function(muestra, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
+                    k = 10, len = 200, conf.level = 0.95, B = 500, type = 2,
                     seed = 2026){
 
 
@@ -66,10 +66,11 @@ ConfPMS <- function(muestra = cbind(X,Y),
 
   }
 
-  if(!methods::is(p,"numeric")){
-    stop("Precision must be an unidimensional numeric value.")
-  }
-  p = floor(abs(p))
+  # if(!methods::is(p,"numeric")){
+  #   stop("Precision must be an unidimensional numeric value.")
+  # }
+  # p = floor(abs(p))
+  p = floor(-log(eps, base = 10))
 
   if(!methods::is(k,"numeric")){
     stop("The number of initial Y values per x.malla point must be an unidimensional integer value.")
@@ -99,18 +100,17 @@ ConfPMS <- function(muestra = cbind(X,Y),
     }
   }
 
+  # comprobamos que el número de dimensiones sea correcto
+  # if (!methods::is(dim,"numeric")){
+  #   stop("Number of dimensions not correct. Pleas, check `muestra` has more than two columns.")
+  #
+  # }
+
   # calculamos la dimensión de la covariable
   dim = ncol(muestra) - 1
-
-  # comprobamos que el número de dimensiones sea correcto
-  if (!methods::is(dim,"numeric")){
-    stop("Number of dimensions not correct. Pleas, check `muestra` has more than two columns.")
-
-  }
-
   # Separamos la variable explicativa de la variable respuesta
-  # X = muestra[,1:dim]
-  # Y = muestra[,dim+1]
+  X = muestra[,1:dim]
+  Y = muestra[,dim+1]
 
   # si no se da una malla, se especifica una
   if(missing(malla)){
@@ -122,13 +122,13 @@ ConfPMS <- function(muestra = cbind(X,Y),
       #   stop("Provide the desired number of Y values per x point on the `malla`, `k`.")
       #
       # }
-      malla = mallador(X,Y, dim = dim, x.malla = attr(modas,"x.malla"), k = k)
+      malla = mallador(muestra, x.malla = attr(modas,"x.malla"), k = k)
     } else{  # si no fue provisto un objeto `modas`, usamos los argumentos suministrados
       # if(missing(k) | missing(l)){
       #   stop("Not enough arguments to compute a `malla` object. Please, check `k` and `l` argument were provided.")
       #
       # }
-      malla = mallador(X, Y, dim = dim, k = k, len = l)
+      malla = mallador(muestra, k = k, len = len)
     }
   } else {
     # en caso de que tengamos ambos, comprobemos que están definidos sobre los mismos
@@ -146,14 +146,14 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`.")
   # obtenemos la información de la malla necesaria
   x.malla <- attr(malla,"x.malla") # puntos sobre los que está construida
   k <- attr(malla, "k") # número de Y's por punto de la malla
-  l <- attr(malla, "len") # número de puntos x diferentes en la malla
+  len <- attr(malla, "len") # número de puntos x diferentes en la malla
   n <- length(Y) # tamaño muestral
 
 
   if(missing(modas)){
 
     modas <- PMSc(X = X, Y= Y, malla = malla, h1 = h1, h2 = h2,
-                  p = p, eps = eps, dim = dim, n = n, k = k, l = l)
+                  p = p, eps = eps, dim = dim, n = n, k = k, len = len)
   }
 
   modas <- structure(modas,
@@ -169,7 +169,7 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`.")
   X <- matrix(X, ncol=dim)
   set.seed(seed)
   Deltasbx <- replicate(B, .Deltas(X = X, Y = Y, modas = modas,
-                                   malla = malla, n = n, k = k, l = l,
+                                   malla = malla, n = n, k = k, len = len,
                                    h1 = h1, h2 = h2, p = p, eps = eps,
                                    dim = dim))
 

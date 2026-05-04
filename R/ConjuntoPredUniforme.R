@@ -1,4 +1,4 @@
-#' Uniform prediction sets based on modal regression.
+#' Uniform prediction sets based on modal regression
 #'
 #' Computes a uniform prediction set for the response value.
 #'
@@ -18,29 +18,33 @@
 #'
 #' @param eps Convergence tolerance and threshold to discriminate between modes.
 #'
-#' @param p Number of decimal digits considered when discriminating modes.
-#'
 #' @param conf.level Confidence level for the prediction set.
 #'
 #' @param k Number of Y values per `x` point in the `malla` object created,
 #'  if `malla` is not provided.
 #'
-#' @param l Number of different `x` points in the `malla` object.
+#' @param len Number of different `x` points in the `malla` object.
 #'
 #' @param malla Matrix containing the initial points used to compute the
 #'  modes using the Partial Mean-Shift algorithm. If not provided,
 #'  `mallador` function is called. It must be a MRpms_malla class object.
 #'
-#' @return A number, which is the radius of the prediction set,
-#' and a plot of the prediction set, the estimated modes and the sample,
-#' if the covariate is one-dimensional.
+#' @return A list. First entry is a list containing the estimated set of
+#' conditional local modes for each point in `x.malla`, the second element.
+#' Third element is the radius of the prediction set.
+#' Aditionally, the prediction set and the estimated modes are plotted.
+#'
+#' @references
+#' Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
+#' Nonparametric modal regression. The Annals of Statistics, 44(2), 489--514.
+#'
+#' @examples
+#' pred <- PredPMS(Ejemplo1)
 #'
 #' @export
 
-PredPMS <- function(muestra, modas,
-                    x.malla, h1 = 0.4, h2 = 1,
-                    eps = 1e-8, p = -log(eps, base = 10),
-                    conf.level = 0.95, k = 10, l = 200, malla){
+PredPMS <- function(muestra, modas, x.malla, h1 = 0.3, h2 = 0.5,
+                    eps = 1e-8, conf.level = 0.95, k = 10, len = 200, malla){
 
   # comprobación de los argumentos suministrados:
   if(!methods::is(h1,"numeric") | h1<=0){
@@ -53,10 +57,11 @@ PredPMS <- function(muestra, modas,
 
   }
 
-  if(!methods::is(p,"numeric")){
-    stop("Precision must be a one-dimensional numeric value.")
-  }
-  p = floor(abs(p))
+  # if(!methods::is(p,"numeric")){
+  #   stop("Precision must be a one-dimensional numeric value.")
+  # }
+  # p = floor(abs(p))
+  p = -log(eps, base = 10)
 
   if(!methods::is(k,"numeric")){
     stop("The number of initial Y values per x.malla point must be an one-dimensional integer value.")
@@ -112,13 +117,13 @@ PredPMS <- function(muestra, modas,
       #   stop("Provide the desired number of Y values per x point on the `malla`, `k`.")
       #
       # }
-      malla = mallador(X,Y, dim = dim, x.malla = attr(modas,"x.malla"), k = k)
+      malla = mallador(muestra, x.malla = attr(modas,"x.malla"), k = k)
     } else{  # si no fue provisto un objeto `modas`, usamos los argumentos suministrados
       # if(missing(k) | missing(l)){
       #   stop("Not enough arguments to compute a `malla` object. Please, check `k` and `l` argument were provided.")
       #
       # }
-      malla = mallador(X, Y, dim = dim, k = k, len = l)
+      malla = mallador(muestra, k = k, len = len)
     }
   } else {
     # en caso de que tengamos ambos, comprobemos que están definidos sobre los mismos
@@ -136,24 +141,24 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`..")
 
   x.malla <- attr(malla,"x.malla")
   k <- attr(malla, "k")
-  l <- attr(malla, "len")
+  len <- attr(malla, "len")
   n = length(Y)
 
   if(missing(modas)){
         modas <- PMSc(X = X, Y = Y, malla = malla, dim = dim,
                       h1 = h1, h2 = h2, p = p, eps = eps,
-                      n = n, k = k, l = l)
+                      n = n, k = k, len = len)
   }
 
 
-  malla.aux = mallador(X,Y,x.malla = X,dim = dim, k = k)
+  malla.aux = mallador(muestra, x.malla = X, k = k)
   # aux <- lapply(1:n, function(i) unique(round(unlist(PMS1c(X = X[-i], Y = Y[-i],
   #                                                                  x = malla.aux[(i-1)*k+1,1:dim],
   #                                                                  ymalla = malla.aux[(i-1)*k+(1:k),dim+1],
   #                                                                  h1 = h1, h2 = h2,eps = eps, k = k, n = n)),p-2)))
   aux <- PMSc(X = X, Y = Y, malla = malla.aux, dim = dim,
                 h1 = h1, h2 = h2, p = p, eps = eps,
-                n = n, k = k, l = l)
+                n = n, k = k, len = len)
 
 
   epsh <- stats::quantile(sapply(1:n, function(i) min(abs(Y[i] - aux[[i]]))), conf.level)
@@ -168,7 +173,6 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`..")
     graphics::points(xg, yg + epsh, col = "grey", pch = 19, cex = 0.4)
     graphics::points(xg, yg, col = "red", pch = 19 )
   }
-  # return(list(modas = modas, epsh = epsh))
-  names(epsh) <- NULL
-  return(epsh)
+  return(list(modas = modas, x.malla = x.malla, epsh = epsh))
+  # return(epsh)
 }

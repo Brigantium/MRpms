@@ -2,27 +2,58 @@
 % Please edit documentation in R/bwselector.R
 \name{bwselector}
 \alias{bwselector}
-\title{Selector of window}
+\title{Bandwith selector}
 \usage{
 bwselector(
   muestra,
-  dim = ncol(muestra) - 1,
-  X = muestra[, 1:dim],
-  Y = muestra[, dim + 1],
-  malla = mallador(X, Y, dim = dim, x.malla = X),
+  malla = mallador(muestra, x.malla = X),
   eps = 1e-08,
-  p = floor(-log(eps, base = 10)),
-  nivel = 0.95,
+  conf.level = 0.95,
   metodo = "CV",
-  n = length(Y),
   eps2 = 0.001
 )
 }
 \arguments{
-\item{eps}{para la convergencia del PMS}
+\item{muestra}{Matrix containing the sample.}
 
-\item{eps2}{para el criterio de parada del algoritmo heurístico (que parará cuando la diferencia de los tres puntos sea pequeña, reescalando por el mayor)}
+\item{malla}{Matrix containing the initial points used to compute the modes
+using the Partial Mean-Shift algorithm. If not provided,
+\code{mallador}function is called. It must be a MRpms_malla class object.}
+
+\item{eps}{PMS convergence tolerance.}
+
+\item{conf.level}{Confidence level for prediction sets (if \code{metodo}=\code{P}).}
+
+\item{metodo}{\code{CV} (default) for Zhao and Huang selector or \code{P} for
+Chen et al. selector based on the size of prediction sets.}
+
+\item{eps2}{Convergence tolerance for heuristic algorithm.}
+}
+\value{
+A vector with two elements, \code{h1} and \code{h2}.
 }
 \description{
-Selector of window
+Performs an heuristic search based on the Nedler-Mead algorithm to find
+appropiate values for the bandwith parameters \code{h1} and \code{h2}.
+(Warning: this is a computationally requiring method which
+might take some time to finish).
+}
+\examples{
+system.time(h <- bwselector(Ejemplo1))
+modas <- PMS(Ejemplo1, h1 = h[1], h2 = h[2])
+plot(Ejemplo1)
+ni <- lapply(modas, length)
+xg <- rep(attr(modas, "x.malla"), times = ni)
+yg <- unlist(modas)
+points(xg, yg, col = "red", pch = 19)
+
+
+}
+\references{
+Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
+Nonparametric modal regression. The Annals of Statistics, 44(2), 489--514.
+
+Zhou, H. and Huang, X. (2019). Bandwidth selection for nonparametric
+modal regression. Communication in Statistics - Simulation and Computation,
+48(4), 968--984.
 }

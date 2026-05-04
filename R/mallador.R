@@ -1,7 +1,6 @@
-#' Constructs a mesh compatible with MRpms functions.
+#' Constructs a mesh compatible with MRpms functions
 #'
-#' Given a matrix containing the sample, or two matrices containing
-#' covariates and response variable, constructs a mesh.
+#' Given a matrix containing the sample, constructs a mesh.
 #' This can be done in two ways: either computing `l` different equidistant `x`
 #' points and assigning `k` different `y` values to each one,
 #' chosen in a k nearest neighbors fashion or, if given a matrix of `x`
@@ -9,27 +8,30 @@
 #'
 #' @param muestra Matrix containing the sample.
 #'
-#' @param X Matrix containing covariates.
-#'
-#' @param Y Vector containing the response variable.
-#'
 #' @param k Number of `y` values for each `x` point in the new mesh.
 #'
 #' @param len Number of different `x` points in the new mesh.
 #'
-#' @param dim Dimension of the covariate.
-#'
 #' @param x.malla Matrix of `x` points given by user.
 #'
-#' @return A matrix coontaining the points of the new mesh.
+#' @return A matrix containing the points of the new mesh.
 #' Each `x` point is repeated `k` times, each one with an associated `y` value.
 #' This matrix has three attributes: `len`, `k` and `x.malla`, the last of which
 #' is a matrix containing the different `x` points in the mesh.
+#'
+#' @examples
+#' malla <- mallador(Ejemplo1)
+#' plot(Ejemplo1)
+#' points(malla, pch = 19, cex = 0.8)
+#'
 #' @export
 
 
-mallador <- function(X = muestra[,1:dim], Y = muestra[,dim+1],
-                    k = 10, len = 100, muestra = cbind(X,Y), dim = 1, x.malla){
+mallador <- function(muestra, k = 10, len = 200, x.malla){
+
+  dim = ncol(muestra) - 1
+  X = muestra[, 1:dim]
+  Y = muestra[, dim+1]
 
   if(dim > 1){ # caso multidimensional
 

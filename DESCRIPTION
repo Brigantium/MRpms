@@ -1,11 +1,11 @@
 Package: MRpms
-Title: Modal Regression with partial mean shift.
-Version: 0.8.6.010
+Title: Modal Regression with partial mean shift
+Version: 0.8.7.000
 Authors@R: c(
-    person("Iker", "Rodríguez Rodríguez", "iker.rodriguez.rodriguez@rai.usc.es", role = c("aut", "cre")),
-    person("Ángel Antonio", "Pérez Balo", "angelantonio.perez@rai.usc.es", role = c("aut"))
+    person(given = "Iker", family = "Rodríguez Rodríguez", email = "iker.rodriguez.rodriguez@rai.usc.es", role = c("aut", "cre")),
+    person(given = "Ángel Antonio", family = "Pérez Balo", email = "angelantonio.perez@rai.usc.es", role = "aut")
     )
-Description: Preforms unidimensional and multidimensional modal regression based in the Partial Mean-Shift algorithm.
+Description: Preforms modal regression based in the Partial Mean-Shift algorithm for one-dimensional covariates.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -14,3 +14,6 @@ Imports:
     graphics,
     stats,
     methods
+Depends: 
+    R (>= 3.5)
+LazyData: true

@@ -1,32 +1,63 @@
-#' Selector of window
-#  ' @param muestra
-# '
-# ' @param dim
-# ' @param X
-# ' @param Y
-# ' @param malla
-# ' @param p
-# ' @param nivel
-# ' @param metodo
-# ' @param n
-#' @param eps para la convergencia del PMS
-#' @param eps2 para el criterio de parada del algoritmo heurístico (que parará cuando la diferencia de los tres puntos sea pequeña, reescalando por el mayor)
+#' Bandwith selector
+#'
+#' Performs an heuristic search based on the Nedler-Mead algorithm to find
+#' appropiate values for the bandwith parameters `h1` and `h2`.
+#' (Warning: this is a computationally requiring method which
+#' might take some time to finish).
+#'
+#' @param muestra Matrix containing the sample.
+#'
+#' @param malla Matrix containing the initial points used to compute the modes
+#' using the Partial Mean-Shift algorithm. If not provided,
+#' `mallador`function is called. It must be a MRpms_malla class object.
+#'
+#' @param metodo `CV` (default) for Zhao and Huang selector or `P` for
+#' Chen et al. selector based on the size of prediction sets.
+#'
+#' @param conf.level Confidence level for prediction sets (if `metodo`=`P`).
+#'
+#' @param eps PMS convergence tolerance.
+#'
+#' @param eps2 Convergence tolerance for heuristic algorithm.
+#'
+#' @return
+#' A vector with two elements, `h1` and `h2`.
+#'
+#' @references
+#' Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
+#' Nonparametric modal regression. The Annals of Statistics, 44(2), 489--514.
+#'
+#' Zhou, H. and Huang, X. (2019). Bandwidth selection for nonparametric
+#' modal regression. Communication in Statistics - Simulation and Computation,
+#' 48(4), 968--984.
+#'
+#' @examples
+#' system.time(h <- bwselector(Ejemplo1))
+#' modas <- PMS(Ejemplo1, h1 = h[1], h2 = h[2])
+#' plot(Ejemplo1)
+#' ni <- lapply(modas, length)
+#' xg <- rep(attr(modas, "x.malla"), times = ni)
+#' yg <- unlist(modas)
+#' points(xg, yg, col = "red", pch = 19)
+#'
 #'
 #' @export
 
-bwselector <- function(muestra, dim = ncol(muestra)-1,
-                       X = muestra[,1:dim], Y = muestra[,dim+1],
-                       malla = mallador(X, Y, dim = dim, x.malla = X),
-                       eps = 1e-8, p = floor(-log(eps, base = 10)),
-                       nivel = 0.95, metodo="CV", n = length(Y),
-                       eps2 = 1e-3){
+bwselector <- function(muestra, malla = mallador(muestra, x.malla = X),
+                       eps = 1e-8, conf.level = 0.95, metodo="CV", eps2 = 1e-3){
+
+  dim <- ncol(muestra) - 1
+  X <- muestra[,1:dim]
+  Y <- muestra[,dim+1]
+  n <- length(Y)
+  p <- floor(-log(eps, base = 10))
 
   if(metodo == "P"){
     k <-attr(malla, "k")
     lensopx <- max(X) - min(X)
     medida <- function(h){hP(X = X, Y = Y, malla = malla, dim = dim,
                                   h1 = h[1], h2 = h[2], eps = eps, p = p,
-                                  n = n, nivel = nivel, k = k,
+                                  n = n, nivel = conf.level, k = k,
                                   lensopx = lensopx)}
 
   }else{

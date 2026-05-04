@@ -2,19 +2,18 @@
 % Please edit documentation in R/ConjuntoPredUniforme.R
 \name{PredPMS}
 \alias{PredPMS}
-\title{Uniform prediction sets based on modal regression.}
+\title{Uniform prediction sets based on modal regression}
 \usage{
 PredPMS(
   muestra,
   modas,
   x.malla,
-  h1 = 0.4,
-  h2 = 1,
+  h1 = 0.3,
+  h2 = 0.5,
   eps = 1e-08,
-  p = -log(eps, base = 10),
   conf.level = 0.95,
   k = 10,
-  l = 200,
+  len = 200,
   malla
 )
 }
@@ -34,24 +33,31 @@ Not needed if \code{modas} is provided.}
 
 \item{eps}{Convergence tolerance and threshold to discriminate between modes.}
 
-\item{p}{Number of decimal digits considered when discriminating modes.}
-
 \item{conf.level}{Confidence level for the prediction set.}
 
 \item{k}{Number of Y values per \code{x} point in the \code{malla} object created,
 if \code{malla} is not provided.}
 
-\item{l}{Number of different \code{x} points in the \code{malla} object.}
+\item{len}{Number of different \code{x} points in the \code{malla} object.}
 
 \item{malla}{Matrix containing the initial points used to compute the
 modes using the Partial Mean-Shift algorithm. If not provided,
 \code{mallador} function is called. It must be a MRpms_malla class object.}
 }
 \value{
-A number, which is the radius of the prediction set,
-and a plot of the prediction set, the estimated modes and the sample,
-if the covariate is one-dimensional.
+A list. First entry is a list containing the estimated set of
+conditional local modes for each point in \code{x.malla}, the second element.
+Third element is the radius of the prediction set.
+Aditionally, the prediction set and the estimated modes are plotted.
 }
 \description{
 Computes a uniform prediction set for the response value.
+}
+\examples{
+pred <- PredPMS(Ejemplo1)
+
+}
+\references{
+Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
+Nonparametric modal regression. The Annals of Statistics, 44(2), 489--514.
 }
