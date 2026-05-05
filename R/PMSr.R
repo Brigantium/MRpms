@@ -30,7 +30,7 @@
 #' @examples
 #' modas <- PMS(twosines)
 #' plot(twosines)
-#' plot(modas)
+#' plot(modas, pch = 19, col = "red")
 #'
 #' @export
 
