@@ -42,6 +42,9 @@ Results of *partial mean shift* over the twosines data set.
 
 </div>
 
+The user could consult a better description of this function y de
+manual: `?PMS`.
+
 In addition, is possible to compute confidence regions too —blue are
 pointwise intervals, grey is an uniform confidence region, both to
 conditional modes—:
@@ -83,11 +86,27 @@ $X = x$.
 
 </div>
 
-Furthermore, we programed a bandwith selector by two different methods:
-a “cross validation”-like proposed by Zhou, H. and Huang, X. (2019); and
-other build-up the size of prediction intervals,Chen et tal (2016). To
-reduce computability times, the function performs a Nedler-Mead
-heuristic algorithm.
+Furthermore, we programed a bandwith selector, `bwselector`, by two
+different methods: a “cross validation”-like proposed by Zhou, H. and
+Huang, X. (2019); and other build-up the size of prediction
+intervals,Chen et tal (2016). To reduce computability times, the
+function performs a Nedler-Mead heuristic algorithm.
+
+In case the user wants a better control over the estimation, in special
+the number of modes and points where they will be estimated, we provided
+with the ‘mallador’ function. This helps to build a mesh both
+equidistant or user selection. Every function admits a `malla` argument,
+but this must be constructed by `mallador` function.
+
+``` r
+
+# equidistant
+malla <- mallador(twosines, k = 10, len = 100) # k: maximum number of modes sensitivity. 
+                                               # len: number of covariable points where estimate
+
+# by user
+# malla <- mallador(twosines, x.malla = c(0,0.1,0.2,0.4,0.55, 0.6,...), k = 10)
+```
 
 <!-- ``` r -->
 
