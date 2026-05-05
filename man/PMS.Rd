@@ -42,12 +42,9 @@ of the covariate appearing in \code{x.malla}. In addition, \code{x.malla} is ret
 Finds the local modes of \code{muestra} conditional on a given set of covariate values.
 }
 \examples{
-modas <- PMS(Ejemplo1)
-plot(Ejemplo1)
-ni <- lapply(modas, length)
-xg <- rep(attr(modas, "x.malla"), times = ni)
-yg <- unlist(modas)
-points(xg, yg, col = "red", pch = 19)
+modas <- PMS(twosines)
+plot(twosines)
+plot(modas)
 
 }
 \references{

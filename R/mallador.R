@@ -20,8 +20,8 @@
 #' is a matrix containing the different `x` points in the mesh.
 #'
 #' @examples
-#' malla <- mallador(Ejemplo1)
-#' plot(Ejemplo1)
+#' malla <- mallador(twosines)
+#' plot(twosines)
 #' points(malla, pch = 19, cex = 0.8)
 #'
 #' @export

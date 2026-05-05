@@ -29,8 +29,8 @@ chosen in a k nearest neighbors fashion or, if given a matrix of \code{x}
 points (\code{x.malla}), performing the same construction over them.
 }
 \examples{
-malla <- mallador(Ejemplo1)
-plot(Ejemplo1)
+malla <- mallador(twosines)
+plot(twosines)
 points(malla, pch = 19, cex = 0.8)
 
 }

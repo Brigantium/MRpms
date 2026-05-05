@@ -28,12 +28,9 @@
 #' Nonparametric modal regression. The Annals of Statistics, 44(2), 489--514.
 #'
 #' @examples
-#' modas <- PMS(Ejemplo1)
-#' plot(Ejemplo1)
-#' ni <- lapply(modas, length)
-#' xg <- rep(attr(modas, "x.malla"), times = ni)
-#' yg <- unlist(modas)
-#' points(xg, yg, col = "red", pch = 19)
+#' modas <- PMS(twosines)
+#' plot(twosines)
+#' plot(modas)
 #'
 #' @export
 
@@ -51,9 +48,9 @@ PMS <- function(muestra, x.malla = NULL,
 
   }
 
-  # if(!methods::is(p,"numeric")){
-  #   stop("Precision must be a one-dimensional numeric value.")
-  # }
+  if(!methods::is(eps,"numeric") | length(eps) != 1L){
+    stop("Precision must be a one-dimensional numeric value.")
+  }
   # p = floor(abs(p))
   p = floor(-log(eps,base = 10))
 
@@ -119,6 +116,6 @@ PMS <- function(muestra, x.malla = NULL,
 
   modas <- structure(modas,
                     x.malla = attr(malla,"x.malla"),
-                  class = "MRpms_modas")
+                    class = "MRpms_modas")
   return(modas)
 }

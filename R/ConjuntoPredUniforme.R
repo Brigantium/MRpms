@@ -39,7 +39,7 @@
 #' Nonparametric modal regression. The Annals of Statistics, 44(2), 489--514.
 #'
 #' @examples
-#' pred <- PredPMS(Ejemplo1)
+#' pred <- PredPMS(twosines)
 #'
 #' @export
 

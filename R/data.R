@@ -3,6 +3,6 @@
 #' Dos senos a distintas alturas
 #'
 #' @examples
-#' plot(Ejemplo1)
+#' plot(twosines)
 #'
-"Ejemplo1"
+"twosines"

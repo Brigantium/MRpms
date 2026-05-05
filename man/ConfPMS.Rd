@@ -62,7 +62,7 @@ and plots them along with the estimated modes over the given sample.
 (Warning: a large number of bootstrap replications increases execution time).
 }
 \examples{
-system.time(conf <- ConfPMS(Ejemplo1, B = 10))
+system.time(conf <- ConfPMS(twosines, B = 10))
 
 
 }

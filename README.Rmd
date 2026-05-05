@@ -26,37 +26,57 @@ remotes::install_github("Brigantium/MRpms")
 
 ## About this package
 
-The main goal of this package is to preforms modal regression over data sets with, as to date, unidimensional covariable. That is: to detect modes of the response variable $Y$'s distribution conditional to $X = x$, where $X$ is the covaribale. \newline 
+The main goal of this package is to performs modal regression over data sets with an, as to date, unidimensional covariable. That is: to detect modes of the response variable $Y$'s distribution conditional to $X = x$, where $X$ is the covaribale. \newline 
 
 <!-- incluir aquí varias de las referencias o, incluso, nuestro propio paper -->
 
-The basic function included in this package is `PMS`, which preforms the estimaton over a given matrix sample:
+The basic function included in this package is `PMS`, which performs the estimaton over a given matrix sample using the *partial mean shift* algorithm:
 
-```{r}
+```{r fig.cap = "Results of *partial mean shift* over the twosines data set.", fig.asp = 0.75, fig.align = 'center'}
 library(MRpms)
 data(twosines) # a data set with two sines shifted by 3 and a normal error of sd = 0.3 
 modas <- PMS(twosines, h1 = 0.5, h2 = 0.5) 
 plot(twosines) 
-plot(modas, pch = 19, col = 2)
+plot(modas, pch = 19, col = 2) # a previous plot is needed
 
 ```
+
+The user could consult a better description of this function y de manual: `?PMS`.
 
 
 In addition, is possible to compute confidence regions too —blue are pointwise intervals, grey is an uniform confidence region, both to conditional modes—:
 
-```{r }
+```{r fig.asp = 0.75, fig.cap = "Confidence regions for the twosines data set. In blue, the pointwise confidence intervals for modes in each $X$ point. In grey, an uniform confidence region for all the modal mainfolds.", fig.align = 'center'}
 
+# invisible is just to avoid a big console output
 invisible(ConfPMS(twosines, modas = modas, h1 = 0.5, h2 = 0.5, B = 10))
 
 ```
 
 And, last, with `PredPMS` an uniform prediction region is computed for the response variable $Y$ —in grey—:
 
-```{r}
+```{r fig.asp = 0.75, fig.cap = "Uniform prediccion intervals to ensure, at $95\\%$, the value of Y known $X = x$.", fig.align = 'center'}
 
 invisible(PredPMS(muestra = twosines, h1 = 0.5, h2 = 0.5))
 
 ```
+
+
+Furthermore, we programed a bandwith selector, `bwselector`, by two different methods: a "cross validation"-like proposed by Zhou, H. and Huang, X. (2019); and other build-up the size of prediction intervals,Chen et tal (2016). To reduce computability times, the function performs a Nedler-Mead heuristic algorithm.
+
+In case the user wants a better control over the estimation, in special the number of modes and points where they will be estimated, we provided with the 'mallador' function. This helps to build a mesh both equidistant or user selection. Every function admits a `malla` argument, but this must be constructed by `mallador` function.
+
+```{r}
+
+# equidistant
+malla <- mallador(twosines, k = 10, len = 100) # k: maximum number of modes sensitivity. 
+                                               # len: number of covariable points where estimate
+
+# by user
+# malla <- mallador(twosines, x.malla = c(0,0.1,0.2,0.4,0.55, 0.6,...), k = 10)
+
+```
+
 
 
 <!-- ``` r -->

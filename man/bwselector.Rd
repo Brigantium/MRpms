@@ -39,14 +39,11 @@ appropiate values for the bandwith parameters \code{h1} and \code{h2}.
 might take some time to finish).
 }
 \examples{
-system.time(h <- bwselector(Ejemplo1))
-modas <- PMS(Ejemplo1, h1 = h[1], h2 = h[2])
-plot(Ejemplo1)
-ni <- lapply(modas, length)
-xg <- rep(attr(modas, "x.malla"), times = ni)
-yg <- unlist(modas)
-points(xg, yg, col = "red", pch = 19)
+system.time(h <- bwselector(twosines))
+modas <- PMS(twosines, h1 = h[1], h2 = h[2])
 
+plot(twosines)
+plot(modas, pch = 19, col = "red")
 
 }
 \references{

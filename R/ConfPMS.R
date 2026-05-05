@@ -44,7 +44,7 @@
 #' Nonparametric modal regression. The Annals of Statistics, 44(2), 489--514.
 #'
 #' @examples
-#' system.time(conf <- ConfPMS(Ejemplo1, B = 10))
+#' system.time(conf <- ConfPMS(twosines, B = 10))
 #'
 #'
 #' @export

@@ -54,7 +54,7 @@ Aditionally, the prediction set and the estimated modes are plotted.
 Computes a uniform prediction set for the response value.
 }
 \examples{
-pred <- PredPMS(Ejemplo1)
+pred <- PredPMS(twosines)
 
 }
 \references{
