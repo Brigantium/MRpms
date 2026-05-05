@@ -25,7 +25,7 @@
 #'
 #' @references
 #' Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
-#' Nonparametric modal regression. The Annals of Statistics, 44(2), 489--514.
+#' *Nonparametric modal regression*. The Annals of Statistics, **44**(2), 489--514.
 #'
 #' @examples
 #' modas <- PMS(twosines)

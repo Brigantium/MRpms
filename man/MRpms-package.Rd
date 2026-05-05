@@ -6,7 +6,7 @@
 \alias{MRpms-package}
 \title{MRpms: Modal Regression with partial mean shift}
 \description{
-Preforms modal regression based in the Partial Mean-Shift algorithm for one-dimensional covariates.
+Performs modal regression based in the Partial Mean-Shift algorithm for one-dimensional covariates.
 }
 \author{
 \strong{Maintainer}: Iker Rodríguez Rodríguez \email{iker.rodriguez.rodriguez@rai.usc.es}

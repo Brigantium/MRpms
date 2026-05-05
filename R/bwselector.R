@@ -25,16 +25,17 @@
 #'
 #' @references
 #' Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
-#' Nonparametric modal regression. The Annals of Statistics, (2), 489--514.
+#' *Nonparametric modal regression*. The Annals of Statistics, **44**(2), 489--514.
 #'
-#' Zhou, H. and Huang, X. (2019). Bandwidth selection for nonparametric
-#' modal regression. Communication in Statistics - Simulation and Computation,
-#' 48(4), 968--984.
+#' Zhou, H. and Huang, X. (2019).
+#' *Bandwidth selection for nonparametric modal regression*.
+#' Communication in Statistics - Simulation and Computation,
+#' **48**(4), 968--984.
 #'
 #' @examples
-#' system.time(h <- bwselector(twosines))
+#' h <- bwselector(twosines)
 #' modas <- PMS(twosines, h1 = h[1], h2 = h[2])
-#' 
+#'
 #' plot(twosines)
 #' plot(modas, pch = 19, col = "red")
 #'
