@@ -112,7 +112,7 @@ PredPMS <- function(muestra, modas, x.malla, h1 = 0.3, h2 = 0.5,
 
     # de ser proveído un objeto modas, entonces construimos la malla con los puntos con los que esta fue calculada
     if(!missing(modas)){
-      if(!methods::is(modas, "MRpms_modas")) stop("`modas` is not an MRpms_modas object, please, use only an object result of an MRpms function package.")
+      if(!methods::is(modas, "MRpms_modas")) {stop("`modas` is not an MRpms_modas object, please, use only an object result of an MRpms function package.")}
       # if (missing(k)){
       #   stop("Provide the desired number of Y values per x point on the `malla`, `k`.")
       #
