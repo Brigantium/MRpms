@@ -4,5 +4,6 @@
 #include <R.h>
 #include <Rinternals.h>
 #include <math.h>
+#include <stdbool.h>
 
 #endif
