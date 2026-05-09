@@ -6,7 +6,7 @@
 #' chosen in a k nearest neighbors fashion or, if given a matrix of `x`
 #' points (`x.malla`), performing the same construction over them.
 #'
-#' @param muestra Matrix containing the sample.
+#' @param data Matrix or data frame containing the sample.
 #'
 #' @param k Number of `y` values for each `x` point in the new mesh.
 #'
@@ -27,11 +27,11 @@
 #' @export
 
 
-mallador <- function(muestra, k = 10, len = 200, x.malla){
+mallador <- function(data, k = 10, len = 200, x.malla){
 
-  dim = ncol(muestra) - 1
-  X = muestra[, 1:dim]
-  Y = muestra[, dim+1]
+  dim = ncol(data) - 1
+  X = data[, 1:dim]
+  Y = data[, dim+1]
 
   if(dim > 1){ # caso multidimensional
 

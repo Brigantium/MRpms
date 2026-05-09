@@ -4,7 +4,7 @@
 #' and plots them along with the estimated modes over the given sample.
 #' (Warning: a large number of bootstrap replications increases execution time).
 #'
-#' @param muestra Matrix containing the sample.
+#' @param data Matrix or data frame containing the sample.
 #'
 #' @param modas List containing the estimated set of conditional local modes
 #' on each covariate point in `malla`. In case `modas` missing,
@@ -50,7 +50,7 @@
 #' @export
 
 
-ConfPMS <- function(muestra, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
+ConfPMS <- function(data, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
                     k = 10, len = 200, conf.level = 0.95, B = 30, type = 2,
                     seed = 2026){
 
@@ -89,13 +89,14 @@ ConfPMS <- function(muestra, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
   }
 
   # comprobar si recibimos una muestra válida
-  if(missing(muestra)){
-    stop("There is no sample data provided. Missing `muestra` matrix")
+  if(missing(data)){
+    stop("There is no sample data provided. Missing `data`")
   } else {
 
+    if(methods::is(data,"data.frame")){ data <- as.matrix(data)}
   # comprobamos si de hecho es una matriz o array
-    if((!methods::is(muestra,"array") & !methods::is(muestra,"matrix")) | typeof(muestra) != "double" ){
-      stop("`muestra` argument is not a numeric matrix nor an array.")
+    if((!methods::is(data,"array") & !methods::is(data,"matrix")) | typeof(data) != "double" ){
+      stop("`data` argument is neither a numeric matrix nor an array.")
 
     }
   }
@@ -107,10 +108,10 @@ ConfPMS <- function(muestra, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
   # }
 
   # calculamos la dimensión de la covariable
-  dim = ncol(muestra) - 1
+  dim = ncol(data) - 1
   # Separamos la variable explicativa de la variable respuesta
-  X = muestra[,1:dim]
-  Y = muestra[,dim+1]
+  X = data[,1:dim]
+  Y = data[,dim+1]
 
   # si no se da una malla, se especifica una
   if(missing(malla)){
@@ -122,13 +123,13 @@ ConfPMS <- function(muestra, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
       #   stop("Provide the desired number of Y values per x point on the `malla`, `k`.")
       #
       # }
-      malla = mallador(muestra, x.malla = attr(modas,"x.malla"), k = k)
+      malla = mallador(data, x.malla = attr(modas,"x.malla"), k = k)
     } else{  # si no fue provisto un objeto `modas`, usamos los argumentos suministrados
       # if(missing(k) | missing(l)){
       #   stop("Not enough arguments to compute a `malla` object. Please, check `k` and `l` argument were provided.")
       #
       # }
-      malla = mallador(muestra, k = k, len = len)
+      malla = mallador(data, k = k, len = len)
     }
   } else {
     # en caso de que tengamos ambos, comprobemos que están definidos sobre los mismos

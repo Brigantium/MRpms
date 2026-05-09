@@ -5,7 +5,7 @@
 #' (Warning: this is a computationally requiring method which
 #' might take some time to finish).
 #'
-#' @param muestra Matrix containing the sample.
+#' @param data Matrix or data frame containing the sample.
 #'
 #' @param malla Matrix containing the initial points used to compute the modes
 #' using the Partial Mean-Shift algorithm. If not provided,
@@ -41,12 +41,12 @@
 #'
 #' @export
 
-bwselector <- function(muestra, malla = mallador(muestra, x.malla = X),
+bwselector <- function(data, malla = mallador(data, x.malla = X),
                        eps = 1e-8, conf.level = 0.95, metodo="CV", eps2 = 1e-3){
 
-  dim <- ncol(muestra) - 1
-  X <- muestra[,1:dim]
-  Y <- muestra[,dim+1]
+  dim <- ncol(data) - 1
+  X <- data[,1:dim]
+  Y <- data[,dim+1]
   n <- length(Y)
   p <- floor(-log(eps, base = 10))
 

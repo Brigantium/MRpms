@@ -3,7 +3,7 @@
 #' Computes a uniform prediction set for the response value.
 #'
 #'
-#' @param muestra Matrix containing the sample.
+#' @param data Matrix or data frame containing the sample.
 #'
 #' @param modas List containing the estimated set of conditional local
 #' modes on each covariate point in `malla`. In case modas missing,
@@ -43,7 +43,7 @@
 #'
 #' @export
 
-PredPMS <- function(muestra, modas, x.malla, h1 = 0.3, h2 = 0.5,
+PredPMS <- function(data, modas, x.malla, h1 = 0.3, h2 = 0.5,
                     eps = 1e-8, conf.level = 0.95, k = 10, len = 200, malla){
 
   # comprobación de los argumentos suministrados:
@@ -80,32 +80,32 @@ PredPMS <- function(muestra, modas, x.malla, h1 = 0.3, h2 = 0.5,
   }
 
   # comprobar si recibimos una muestra válida
-  if(missing(muestra)){
-    stop("There is no sample data provided. Missing `muestra` matrix")
+  if(missing(data)){
+    stop("There is no sample data provided. Missing `data`")
   } else {
 
-
+    if(methods::is(data,"data.frame")){ data <- as.matrix(data)}
     # comprobamos si de hecho es una matriz o array
-    if((!methods::is(muestra,"array") & !methods::is(muestra,"matrix")) | typeof(muestra) != "double" ){
-      stop("`muestra` argument is not a numeric matrix nor an array.")
+    if((!methods::is(data,"array") & !methods::is(data,"matrix")) | typeof(data) != "double" ){
+      stop("`data` argument is neither a numeric matrix nor an array.")
 
     }
   }
 
 
   # calculamos la dimensión de la covariable
-  dim = ncol(muestra) - 1
+  dim = ncol(data) - 1
 
   # comprobamos que el número de dimensiones sea correcto
-  if (!methods::is(dim,"numeric")){
-    stop("Number of dimensions is not correct. Please, check `muestra` has more
-         than two columns.")
-
-  }
+  # if (!methods::is(dim,"numeric")){
+  #   stop("Number of dimensions is not correct. Please, check `muestra` has more
+  #        than two columns.")
+  #
+  # }
 
   # Separamos la variable explicativa de la variable respuesta
-  X = muestra[, 1:dim]
-  Y = muestra[, dim+1]
+  X = data[, 1:dim]
+  Y = data[, dim+1]
 
   # si no se da una malla, se especifica una
   if(missing(malla)){
@@ -117,13 +117,13 @@ PredPMS <- function(muestra, modas, x.malla, h1 = 0.3, h2 = 0.5,
       #   stop("Provide the desired number of Y values per x point on the `malla`, `k`.")
       #
       # }
-      malla = mallador(muestra, x.malla = attr(modas,"x.malla"), k = k)
+      malla = mallador(data, x.malla = attr(modas,"x.malla"), k = k)
     } else{  # si no fue provisto un objeto `modas`, usamos los argumentos suministrados
       # if(missing(k) | missing(l)){
       #   stop("Not enough arguments to compute a `malla` object. Please, check `k` and `l` argument were provided.")
       #
       # }
-      malla = mallador(muestra, k = k, len = len)
+      malla = mallador(data, k = k, len = len)
     }
   } else {
     # en caso de que tengamos ambos, comprobemos que están definidos sobre los mismos
@@ -151,7 +151,7 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`..")
   }
 
 
-  malla.aux = mallador(muestra, x.malla = X, k = k)
+  malla.aux = mallador(data, x.malla = X, k = k)
   # aux <- lapply(1:n, function(i) unique(round(unlist(PMS1c(X = X[-i], Y = Y[-i],
   #                                                                  x = malla.aux[(i-1)*k+1,1:dim],
   #                                                                  ymalla = malla.aux[(i-1)*k+(1:k),dim+1],

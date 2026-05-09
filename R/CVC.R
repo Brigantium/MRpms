@@ -3,8 +3,8 @@
   ## usethis namespace: end
   NULL
 
-CVC <- function(muestra = cbind(X,Y),X = muestra[,1:dim],Y = muestra[,dim+1],
-                malla = mallador(muestra), dim, h1, h2, p = floor(-log(eps, base = 10)),
+CVC <- function(data = cbind(X,Y),X = data[,1:dim],Y = data[,dim+1],
+                malla = mallador(data), dim, h1, h2, p = floor(-log(eps, base = 10)),
                 eps = 10^(-p), n = length(Y), k = attr(malla,"k")){
 
   .Call(CV, as.numeric(X), as.numeric(Y), as.numeric(malla),

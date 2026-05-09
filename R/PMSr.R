@@ -1,8 +1,8 @@
 #' Partial Mean-Shift Algorithm
 #'
-#' Finds the local modes of `muestra` conditional on a given set of covariate values.
+#' Finds the local modes of `data` conditional on a given set of covariate values.
 #'
-#' @param muestra Matrix containing the sample.
+#' @param data Matrix or data frame containing the sample.
 #'
 #' @param x.malla Set of covariate points where the modes will be estimated.
 #'
@@ -34,7 +34,7 @@
 #'
 #' @export
 
-PMS <- function(muestra, x.malla = NULL,
+PMS <- function(data, x.malla = NULL,
                 h1 = 0.3, h2 = 0.5, eps = 1e-8, k = 10 , len = 200,
                 malla = NULL){
 
@@ -59,10 +59,10 @@ PMS <- function(muestra, x.malla = NULL,
   }
   k = floor(abs(k))
 
-
+  if(methods::is(data,"data.frame")){ data <- as.matrix(data)}
   # comprobamos si de hecho es una matriz o array
-  if((!methods::is(muestra,"array") & !methods::is(muestra,"matrix")) | typeof(muestra) != "double" ){
-    stop("`muestra` argument is neither a numeric matrix nor an array.")
+  if((!methods::is(data,"array") & !methods::is(data,"matrix")) | typeof(data) != "double" ){
+    stop("`data` argument is neither a numeric matrix nor an array.")
 
   }
 
@@ -74,13 +74,13 @@ PMS <- function(muestra, x.malla = NULL,
     }
   }
 
-  dim = ncol(muestra) - 1
+  dim = ncol(data) - 1
 
-  if(!methods::is(dim,"numeric")){
-    stop("Incorrect dimension. Please, make sure `muestra` is a matrix with at
-    least two columns, one with X and other with Y values.")
-
-  }
+  # if(!methods::is(dim,"numeric")){
+  #   stop("Incorrect dimension. Please, make sure `muestra` is a matrix with at
+  #   least two columns, one with X and other with Y values.")
+  #
+  # }
 
 
   # en caso de que no sea dado un objeto malla, se calcula
@@ -99,18 +99,18 @@ PMS <- function(muestra, x.malla = NULL,
     # }
     # if (!missing(x.malla)) malla = mallador(muestra[,1:dim], muestra[,dim+1],dim = dim, k = k, x.malla = x.malla)
     if (!is.null(x.malla)){
-      malla = mallador(muestra, k = k, x.malla = x.malla)
-    }else malla = mallador(muestra, k = k, len = len)
+      malla = mallador(data, k = k, x.malla = x.malla)
+    }else malla = mallador(data, k = k, len = len)
     # if (!missing(l)) malla = mallador(muestra[,1:dim], muestra[,dim+1],dim = dim, k = k, len = l)
   }
 
   # paso = if(dim==1) .pasoU else .pasoM
   l = attr(malla, "len")
   k = attr(malla,"k")
-  n = nrow(muestra)
+  n = nrow(data)
 
   # realizamos la estimación de las modas
-  modas <- PMSc(muestra[,1:dim], muestra[,dim+1], malla = malla,h1 = h1,h2 = h2, p = p, eps = eps, dim = dim,
+  modas <- PMSc(data[,1:dim], data[,dim+1], malla = malla,h1 = h1,h2 = h2, p = p, eps = eps, dim = dim,
                            n = n, k = k, len = len)
 
 
