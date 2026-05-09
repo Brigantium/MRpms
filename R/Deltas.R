@@ -1,4 +1,4 @@
-.Deltas <- function(X, Y, modas, malla, n = length(Y),
+Deltas <- function(X, Y, modas, malla, n = length(Y),
                    k = attr(malla,"k"), len = attr(malla,"len"),
                    h1  = 0.3, h2 = 0.5, p = floor(-log(eps, base = 10)),
                    eps = 10^(-p), dim){
