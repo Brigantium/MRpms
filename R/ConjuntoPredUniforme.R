@@ -156,9 +156,10 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`..")
   #                                                                  x = malla.aux[(i-1)*k+1,1:dim],
   #                                                                  ymalla = malla.aux[(i-1)*k+(1:k),dim+1],
   #                                                                  h1 = h1, h2 = h2,eps = eps, k = k, n = n)),p-2)))
+  len.aux <- attr(malla.aux, "len")
   aux <- PMSc(X = X, Y = Y, malla = malla.aux, dim = dim,
                 h1 = h1, h2 = h2, p = p, eps = eps,
-                n = n, k = k, len = len)
+                n = n, k = k, len = len.aux)
 
 
   epsh <- stats::quantile(sapply(1:n, function(i) min(abs(Y[i] - aux[[i]]))), conf.level)
