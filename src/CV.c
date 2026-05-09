@@ -28,10 +28,13 @@ SEXP CV(SEXP Xarg, SEXP Yarg, SEXP mallarg, SEXP dimarg, SEXP h1arg, SEXP h2arg,
   double aux2 = 0., aux = 0.;
   
   bool moda_distinta = 0;
+
+  double h1aux = h1*h1*2.;
+  double h2aux = h2*h2*2.;
   
   
   for(int i = 0; i < n;i++){
-    double *modas_aux = (double*)malloc(sizeof(double)*k);
+    // double *modas_aux = (double*)malloc(sizeof(double)*k);
     // inicializamos el contador de modas para el i-ésimo x:
     nmodas = 0;
 
@@ -43,7 +46,7 @@ SEXP CV(SEXP Xarg, SEXP Yarg, SEXP mallarg, SEXP dimarg, SEXP h1arg, SEXP h2arg,
 
     // calculamos las modas 
     // Rprintf("x: %f --- X[i]: %f\n",malla[i*k], X[i]);
-    modas_aux = PMS1_CV(X,Y,malla[i*k],ymalla_aux,h1,h2,eps, k, n, i);
+    double *modas_aux = PMS1_CV(X,Y,malla[i*k],ymalla_aux,h1aux,h2aux,eps, k, n, i);
     // Rprintf("modas_aux: ");
     // for (int j = 0; j <k; j++){
     //   Rprintf("%f, ",modas_aux[j]);

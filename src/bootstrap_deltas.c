@@ -27,6 +27,9 @@ SEXP bootstrap_deltas(SEXP Xarg, SEXP Yarg, SEXP modasarg, SEXP nmodasarg, SEXP 
     double *Yb = (double*)malloc(sizeof(double)*n);
     double *ymalla_aux = (double*)malloc(sizeof(double)*k);
 
+    double h1aux = h1*h1*2.;
+  double h2aux = h2*h2*2;
+
     SEXP deltasbx = PROTECT(Rf_allocVector(REALSXP, l*B));
 
     for(int b = 0; b<B;b++){
@@ -48,8 +51,7 @@ SEXP bootstrap_deltas(SEXP Xarg, SEXP Yarg, SEXP modasarg, SEXP nmodasarg, SEXP 
 
         for(int i = 0; i <l;i++){
 
-
-            double *modasb_aux = (double*)malloc(sizeof(double)*k);
+            // double *modasb_aux = (double*)malloc(sizeof(double)*k);
             // inicializamos el contador de modas para el i-ésimo x:
             nmodasb = 0;
 
@@ -60,7 +62,7 @@ SEXP bootstrap_deltas(SEXP Xarg, SEXP Yarg, SEXP modasarg, SEXP nmodasarg, SEXP 
             }
 
             // calculamos las modas en x.malla[i]
-            modasb_aux = PMS1c(Xb,Yb,malla[i*k],ymalla_aux,h1,h2,eps, k, n);
+            double *modasb_aux = PMS1c(Xb,Yb,malla[i*k],ymalla_aux,h1aux,h2aux,eps, k, n);
             // Rprintf("modasb_aux: ");
             // for (int auxit = 0;auxit<k;auxit++){
             //     Rprintf(" %f,",modasb_aux[auxit]);

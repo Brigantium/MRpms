@@ -25,10 +25,13 @@ SEXP PMSC(SEXP Xarg, SEXP Yarg, SEXP mallarg, SEXP dimarg, SEXP h1arg, SEXP h2ar
   
   bool moda_distinta = 0;
 
+  double h1aux = h1*h1*2.;
+  double h2aux = h2*h2*2;
+
 
   for(int i = 0; i <l;i++){
 
-    double *modas_aux = (double*)malloc(sizeof(double)*k);
+    // double *modas_aux = (double*)malloc(sizeof(double)*k);
     // inicializamos el contador de modas para el i-ésimo x:
     nmodas = 0;
 
@@ -39,7 +42,7 @@ SEXP PMSC(SEXP Xarg, SEXP Yarg, SEXP mallarg, SEXP dimarg, SEXP h1arg, SEXP h2ar
     }
 
     // calculamos las modas 
-    modas_aux = PMS1c(X,Y,malla[i*k],ymalla_aux,h1,h2,eps, k, n);
+    double *modas_aux = PMS1c(X,Y,malla[i*k],ymalla_aux,h1aux,h2aux,eps, k, n);
     
 
     // guardamos las modas únicas en un nuevo vector

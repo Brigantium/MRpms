@@ -15,14 +15,19 @@ SEXP PMS1(SEXP Xarg, SEXP Yarg, SEXP xarg, SEXP ymallaarg, SEXP h1arg, SEXP h2ar
   
   double *y = (double*)malloc(sizeof(double)*k);
   int yend = 0;
+
+  double h1aux = h1*h1*2.;
+  double h2aux = h2*h2*2;
+
+  double *xaux = pasoauxx(x, X, h1aux, n);
   
   while(1){
-    y[0] = paso(x,ymalla[0],h1,h2,X,Y,n);
+    y[0] = pasoEf(xaux,ymalla[0],h2aux,Y,n);
     
     yend = (fabs(y[0] - ymalla[0]) < eps);
     
     for(int i = 1;i <k; i++){
-      y[i] = paso(x,ymalla[i],h1,h2,X,Y,n);
+      y[i] = pasoEf(xaux,ymalla[i],h2,Y,n);
       
       yend += (fabs(y[i] - ymalla[i]) < eps);
     }
@@ -46,7 +51,7 @@ SEXP PMS1(SEXP Xarg, SEXP Yarg, SEXP xarg, SEXP ymallaarg, SEXP h1arg, SEXP h2ar
   UNPROTECT(1);
   
   free(y);
-
+  free(xaux);
   return yres;
 }
 

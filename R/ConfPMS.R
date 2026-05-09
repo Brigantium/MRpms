@@ -168,7 +168,7 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`.")
 
   X <- matrix(X, ncol=dim)
   set.seed(seed)
-  Deltasbx <- replicate(B, .Deltas(X = X, Y = Y, modas = modas,
+  Deltasbx <- replicate(B, Deltas(X = X, Y = Y, modas = modas,
                                    malla = malla, n = n, k = k, len = len,
                                    h1 = h1, h2 = h2, p = p, eps = eps,
                                    dim = dim))
