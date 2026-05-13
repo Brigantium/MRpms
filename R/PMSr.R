@@ -105,7 +105,7 @@ PMS <- function(data, x.malla = NULL,
   }
 
   # paso = if(dim==1) .pasoU else .pasoM
-  l = attr(malla, "len")
+  len = attr(malla, "len")
   k = attr(malla,"k")
   n = nrow(data)
 
