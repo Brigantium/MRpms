@@ -2,10 +2,10 @@
 % Please edit documentation in R/PMSr.R
 \name{PMS}
 \alias{PMS}
-\title{Partial Mean-Shift Algorithm}
+\title{Preforms the Partial Mean-Shift Algorithm}
 \usage{
 PMS(
-  muestra,
+  data,
   x.malla = NULL,
   h1 = 0.3,
   h2 = 0.5,
@@ -16,7 +16,7 @@ PMS(
 )
 }
 \arguments{
-\item{muestra}{Matrix containing the sample.}
+\item{data}{Matrix or data frame containing the sample.}
 
 \item{x.malla}{Set of covariate points where the modes will be estimated.}
 
@@ -32,14 +32,14 @@ PMS(
 
 \item{malla}{Matrix containing the initial points used to compute the modes
 with the Partial Mean-Shift algorithm. If not provided,
-\code{mallador}function is called. It must be a MRpms_malla class object.}
+\code{mallador}function is called. It must be a \code{MRpms_malla} class object.}
 }
 \value{
 A list containing the estimated local modes conditional on the values
 of the covariate appearing in \code{x.malla}. In addition, \code{x.malla} is returned as an attribute.
 }
 \description{
-Finds the local modes of \code{muestra} conditional on a given set of covariate values.
+Finds the local modes of \code{data} conditional on a given set of covariate values.
 }
 \examples{
 modas <- PMS(twosines)

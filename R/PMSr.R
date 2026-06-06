@@ -1,4 +1,4 @@
-#' Partial Mean-Shift Algorithm
+#' Preforms the Partial Mean-Shift Algorithm
 #'
 #' Finds the local modes of `data` conditional on a given set of covariate values.
 #'
@@ -18,7 +18,7 @@
 #'
 #' @param malla Matrix containing the initial points used to compute the modes
 #' with the Partial Mean-Shift algorithm. If not provided,
-#' `mallador`function is called. It must be a MRpms_malla class object.
+#' `mallador`function is called. It must be a `MRpms_malla` class object.
 #'
 #' @return A list containing the estimated local modes conditional on the values
 #'  of the covariate appearing in `x.malla`. In addition, `x.malla` is returned as an attribute.
@@ -67,7 +67,6 @@ PMS <- function(data, x.malla = NULL,
   }
 
   # Comprobamos si x.malla es un vector/matriz de puntos numérico
-  # if (!missing(x.malla)){
   if (!is.null(x.malla)){
     if((!methods::is(x.malla,"array") & !methods::is(x.malla,"matrix") & !methods::is(x.malla,"numeric")) | typeof(x.malla) != "double" ){
       stop("`x.malla` argument is neither a numeric matrix nor an array.")
@@ -76,35 +75,19 @@ PMS <- function(data, x.malla = NULL,
 
   dim = ncol(data) - 1
 
-  # if(!methods::is(dim,"numeric")){
-  #   stop("Incorrect dimension. Please, make sure `muestra` is a matrix with at
-  #   least two columns, one with X and other with Y values.")
-  #
-  # }
-
 
   # en caso de que no sea dado un objeto malla, se calcula
-  # if (missing(malla)){
   if (is.null(malla)){
-    # if(missing(k)){
-    #   stop("Please, provide the desired number of Y values per x point in the `malla` object, `k`.")
-    #
-    # }
-    # if (missing(l) & missing(x.malla)){
-    #   stop("Please, provide the desired number of different x points in the
-    #   `malla` object, `l`, where modes will be estimated.
-    #   As an alternative to `l`, you can provide an array with the desired
-    #   x points using the `x.malla` argument.")
-    #
-    # }
-    # if (!missing(x.malla)) malla = mallador(muestra[,1:dim], muestra[,dim+1],dim = dim, k = k, x.malla = x.malla)
-    if (!is.null(x.malla)){
+
+    if (!is.null(x.malla)){ # si se proporcionan unos puntos donde calcular las modas, se calculan para el cálculo de la malla
+
       malla = mallador(data, k = k, x.malla = x.malla)
+
     }else malla = mallador(data, k = k, len = len)
-    # if (!missing(l)) malla = mallador(muestra[,1:dim], muestra[,dim+1],dim = dim, k = k, len = l)
+
   }
 
-  # paso = if(dim==1) .pasoU else .pasoM
+  # extraemos la información importante de la malla
   len = attr(malla, "len")
   k = attr(malla,"k")
   n = nrow(data)
@@ -114,6 +97,7 @@ PMS <- function(data, x.malla = NULL,
                            n = n, k = k, len = len)
 
 
+  # construimos el objeto MRpms_modas
   modas <- structure(modas,
                     x.malla = attr(malla,"x.malla"),
                     class = "MRpms_modas")

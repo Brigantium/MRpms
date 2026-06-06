@@ -1,6 +1,6 @@
-#' Constructs a mesh compatible with MRpms functions
+#' @title Constructs a mesh compatible with MRpms functions
 #'
-#' Given a matrix containing the sample, constructs a mesh.
+#' @description Given a matrix containing the sample, constructs a mesh.
 #' This can be done in two ways: either computing `l` different equidistant `x`
 #' points and assigning `k` different `y` values to each one,
 #' chosen in a k nearest neighbors fashion or, if given a matrix of `x`
@@ -73,3 +73,7 @@ mallador <- function(data, k = 10, len = 200, x.malla){
                       class = "MRpms_malla")
   return(malla = malla)
 }
+
+
+
+MRpms_norma <- function(v,V) sqrt(apply((v-V)^2,1,sum))

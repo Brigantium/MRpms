@@ -1,11 +1,13 @@
 Package: MRpms
-Title: Modal Regression with partial mean shift
-Version: 0.9.2.000
+Title: Modal Regression with partial mean-shift
+Version: 0.9.2.010
 Authors@R: c(
     person(given = "Iker", family = "Rodríguez Rodríguez", email = "iker.rodriguez.rodriguez@rai.usc.es", role = c("aut", "cre")),
     person(given = "Ángel Antonio", family = "Pérez Balo", email = "angelantonio.perez@rai.usc.es", role = "aut")
     )
 Description: Performs modal regression based in the Partial Mean-Shift algorithm for one-dimensional covariates.
+URL: https://github.com/Brigantium/MRpms
+BugReports: https://github.com/Brigantium/MRpms/issues
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

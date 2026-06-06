@@ -4,9 +4,17 @@
 \name{MRpms-package}
 \alias{MRpms}
 \alias{MRpms-package}
-\title{MRpms: Modal Regression with partial mean shift}
+\title{MRpms: Modal Regression with partial mean-shift}
 \description{
 Performs modal regression based in the Partial Mean-Shift algorithm for one-dimensional covariates.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/Brigantium/MRpms}
+  \item Report bugs at \url{https://github.com/Brigantium/MRpms/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Iker Rodríguez Rodríguez \email{iker.rodriguez.rodriguez@rai.usc.es}

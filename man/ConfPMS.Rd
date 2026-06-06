@@ -5,7 +5,7 @@
 \title{Pointwise and uniform confidence sets}
 \usage{
 ConfPMS(
-  muestra,
+  data,
   modas,
   malla,
   h1 = 0.3,
@@ -20,7 +20,7 @@ ConfPMS(
 )
 }
 \arguments{
-\item{muestra}{Matrix containing the sample.}
+\item{data}{Matrix or data frame containing the sample.}
 
 \item{modas}{List containing the estimated set of conditional local modes
 on each covariate point in \code{malla}. In case \code{modas} missing,
@@ -54,7 +54,8 @@ the confidence sets.}
 A list. First entry is a list containing the estimated set of
 conditional local modes for each \code{x} point in the \code{malla}. If \code{type} is 0 or 2,
 returns a vector with the estimated pointwise errors (\code{deltax}).
-If \code{type} is 1 or 2, returns the estimated uniform error (\code{delta}).
+If \code{type} is 1 or 2, returns the estimated uniform error (\code{delta}). In case \code{dim} is \code{1},
+a plot with the desired regions is printed.
 }
 \description{
 Computes pointwise and uniform confidence sets for conditional local modes

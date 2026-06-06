@@ -1,4 +1,5 @@
-#' @exportS3Method
+#' @export
+#' @method print MRpms_modas
 
 print.MRpms_modas <- function(x,...){
   y <- sapply(x,as.numeric)

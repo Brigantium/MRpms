@@ -1,3 +1,10 @@
+
+
+
+
+
+Haus<-function(A,B){max(apply(abs((outer(A,B, "-"))),2,min))}
+
 Deltas <- function(X, Y, modas, malla, n = length(Y),
                    k = attr(malla,"k"), len = attr(malla,"len"),
                    h1  = 0.3, h2 = 0.5, p = floor(-log(eps, base = 10)),
@@ -12,6 +19,6 @@ Deltas <- function(X, Y, modas, malla, n = length(Y),
                                                                    x = malla[(i-1)*k+1,1:dim],
                                                                    ymalla = malla[(i-1)*k+(1:k),dim+1],
                                                                    h1 = h1, h2 = h2,eps = eps, k = k, n = n)),p-1))))
-  Deltax <- sapply(1:len, function(i) .Haus(modas[[i]], modasb[[i]]))
+  Deltax <- sapply(1:len, function(i) Haus(modas[[i]], modasb[[i]]))
   return(Deltax)
 }

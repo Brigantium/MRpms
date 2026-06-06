@@ -1,6 +1,6 @@
-#' Ejemplo 1
+#' Ejemplo de los dos senos.
 #'
-#' Dos senos a distintas alturas
+#' Dos senos a distintas alturas.
 #'
 #' @examples
 #' plot(twosines)

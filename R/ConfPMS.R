@@ -1,6 +1,6 @@
-#' Pointwise and uniform confidence sets
+#' @title Pointwise and uniform confidence sets
 #'
-#' Computes pointwise and uniform confidence sets for conditional local modes
+#' @description Computes pointwise and uniform confidence sets for conditional local modes
 #' and plots them along with the estimated modes over the given sample.
 #' (Warning: a large number of bootstrap replications increases execution time).
 #'
@@ -37,7 +37,8 @@
 #' @return A list. First entry is a list containing the estimated set of
 #' conditional local modes for each `x` point in the `malla`. If `type` is 0 or 2,
 #' returns a vector with the estimated pointwise errors (`deltax`).
-#' If `type` is 1 or 2, returns the estimated uniform error (`delta`).
+#' If `type` is 1 or 2, returns the estimated uniform error (`delta`). In case `dim` is `1`,
+#' a plot with the desired regions is printed.
 #'
 #' @references
 #' Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
@@ -66,10 +67,6 @@ ConfPMS <- function(data, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
 
   }
 
-  # if(!methods::is(p,"numeric")){
-  #   stop("Precision must be an unidimensional numeric value.")
-  # }
-  # p = floor(abs(p))
   p = floor(-log(eps, base = 10))
 
   if(!methods::is(k,"numeric")){
@@ -101,12 +98,6 @@ ConfPMS <- function(data, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
     }
   }
 
-  # comprobamos que el número de dimensiones sea correcto
-  # if (!methods::is(dim,"numeric")){
-  #   stop("Number of dimensions not correct. Pleas, check `muestra` has more than two columns.")
-  #
-  # }
-
   # calculamos la dimensión de la covariable
   dim = ncol(data) - 1
   # Separamos la variable explicativa de la variable respuesta
@@ -119,23 +110,18 @@ ConfPMS <- function(data, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
     # de ser proveído un objeto modas, entonces construimos la malla con los puntos con los que esta fue calculada
     if(!missing(modas)){
       if(!methods::is(modas, "MRpms_modas")) stop("`modas` is not an MRpms_modas object, please, use only an object result of an MRpms function package.")
-      # if (missing(k)){
-      #   stop("Provide the desired number of Y values per x point on the `malla`, `k`.")
-      #
-      # }
+
       malla = mallador(data, x.malla = attr(modas,"x.malla"), k = k)
     } else{  # si no fue provisto un objeto `modas`, usamos los argumentos suministrados
-      # if(missing(k) | missing(l)){
-      #   stop("Not enough arguments to compute a `malla` object. Please, check `k` and `l` argument were provided.")
-      #
-      # }
+     
       malla = mallador(data, k = k, len = len)
     }
+
   } else {
     # en caso de que tengamos ambos, comprobemos que están definidos sobre los mismos
     # puntos.
     if(!missing(modas)){
-      if(!methods::is(modas, "MRpms_modas")) stop("`modas` is not an MRpms_modas object, please, use only an object result of an MRpms function package.")
+      if(!methods::is(modas, "MRpms_modas")) stop("`modas` is not an MRpms_modas object, please, use only an object result of an MRpms function.")
       if(attr(modas,"x.malla") != attr(malla,"x.malla")){
         stop("`x.malla` in `malla` object and `modas` object are not equal.
 Please, provide a `malla` object built over the same `x.malla` as `modas`.")
@@ -144,29 +130,34 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`.")
     }
   }
 
-  # obtenemos la información de la malla necesaria
+  # obtenemos la información necesaria de la malla 
   x.malla <- attr(malla,"x.malla") # puntos sobre los que está construida
   k <- attr(malla, "k") # número de Y's por punto de la malla
   len <- attr(malla, "len") # número de puntos x diferentes en la malla
   n <- length(Y) # tamaño muestral
 
-
+  # de no terner las modas, se calculan
   if(missing(modas)){
 
     modas <- PMSc(X = X, Y= Y, malla = malla, h1 = h1, h2 = h2,
                   p = p, eps = eps, dim = dim, n = n, k = k, len = len)
+    
+    # la función PMSc es más rápida, pero no devuelve un objeto modas.
+    modas <- structure(modas, x.malla = x.malla,
+                        class = "MRpms_modas")
   }
 
-  modas <- structure(modas,
-                     x.malla = x.malla,
-                     class = "MRpms_modas")
-  # graficamos las modas calculadas
-  plot(X, Y)
-  ni <- lapply(modas, length)
-  xg <- rep(x.malla, times = ni)
-  yg <- unlist(modas)
   salida <- list(modas = modas, x.malla = x.malla)
 
+  # graficamos las modas calculadas en el caso unidimensional
+  if (dim == 1L){
+    plot(X, Y)
+    ni <- lapply(modas, length)
+    xg <- rep(x.malla, times = ni)
+    yg <- unlist(modas)
+  }
+
+  # calculamos los distintos radios puntuales
   X <- matrix(X, ncol=dim)
   set.seed(seed)
   Deltasbx <- replicate(B, Deltas(X = X, Y = Y, modas = modas,
@@ -174,27 +165,31 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`.")
                                    h1 = h1, h2 = h2, p = p, eps = eps,
                                    dim = dim))
 
-  if(type != 0 & type != 1 & type != 2){
+  if(type != 0L & type != 1L & type != 2L){
     stop("Please, select `type` between 0, 1 and 2.")
   }
 
-  if(type==1 | type==2){
+  if(type==1L | type==2L){
     Deltasb <- apply(Deltasbx, 2, max)
     delta <- stats::quantile(Deltasb, conf.level)
-    sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-delta, yg[i]+delta), col ="lightgrey", lwd = 1.5))
-    graphics::points(xg, yg - delta, col = "grey", pch = 19, cex = 0.4)
-    graphics::points(xg, yg + delta, col = "grey", pch = 19, cex = 0.4)
+
+    if (dim == 1L){
+      sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-delta, yg[i]+delta), col ="lightgrey", lwd = 1.5))
+      graphics::points(xg, yg - delta, col = "grey", pch = 19, cex = 0.4)
+      graphics::points(xg, yg + delta, col = "grey", pch = 19, cex = 0.4)
+    }
+
     salida <- append(salida, list(delta = delta))
   }
 
   if(type==0 | type==2){
     deltasx <- apply(Deltasbx, 1, function(x) stats::quantile(x, conf.level))
     radio <- rep(deltasx, ni)
-    sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-radio[i], yg[i]+radio[i]), col ="blue", lwd = 1.5))
+    if (dim == 1L) sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-radio[i], yg[i]+radio[i]), col ="blue", lwd = 1.5))
     salida <- append(salida, list(deltax = radio))
   }
 
-  graphics::points(xg, yg, col = "red", pch = 19)
+  if (dim == 1L) graphics::points(xg, yg, col = "red", pch = 19)
 
   return(salida)
 }

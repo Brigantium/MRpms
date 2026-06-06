@@ -3,7 +3,7 @@
 \docType{data}
 \name{twosines}
 \alias{twosines}
-\title{Ejemplo 1}
+\title{Ejemplo de los dos senos.}
 \format{
 An object of class \code{matrix} (inherits from \code{array}) with 200 rows and 2 columns.
 }
@@ -11,7 +11,7 @@ An object of class \code{matrix} (inherits from \code{array}) with 200 rows and 
 twosines
 }
 \description{
-Dos senos a distintas alturas
+Dos senos a distintas alturas.
 }
 \examples{
 plot(twosines)

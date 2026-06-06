@@ -4,10 +4,10 @@
 \alias{mallador}
 \title{Constructs a mesh compatible with MRpms functions}
 \usage{
-mallador(muestra, k = 10, len = 200, x.malla)
+mallador(data, k = 10, len = 200, x.malla)
 }
 \arguments{
-\item{muestra}{Matrix containing the sample.}
+\item{data}{Matrix or data frame containing the sample.}
 
 \item{k}{Number of \code{y} values for each \code{x} point in the new mesh.}
 

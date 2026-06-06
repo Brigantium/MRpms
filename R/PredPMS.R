@@ -32,7 +32,8 @@
 #' @return A list. First entry is a list containing the estimated set of
 #' conditional local modes for each point in `x.malla`, the second element.
 #' Third element is the radius of the prediction set.
-#' Aditionally, the prediction set and the estimated modes are plotted.
+#' Aditionally, the prediction set and the estimated modes are plotted in case 
+#' `dim` is `1`.
 #'
 #' @references
 #' Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
@@ -57,10 +58,7 @@ PredPMS <- function(data, modas, x.malla, h1 = 0.3, h2 = 0.5,
 
   }
 
-  # if(!methods::is(p,"numeric")){
-  #   stop("Precision must be a one-dimensional numeric value.")
-  # }
-  # p = floor(abs(p))
+  # calculamos la precisión
   p = -log(eps, base = 10)
 
   if(!methods::is(k,"numeric")){
@@ -74,7 +72,6 @@ PredPMS <- function(data, modas, x.malla, h1 = 0.3, h2 = 0.5,
   }
 
 
-
   if(!missing(malla)){
     if(!methods::is(malla, "MRpms_malla")) stop("`malla` is not a `malla` object. Use `mallador` function to compute one.")
   }
@@ -85,6 +82,7 @@ PredPMS <- function(data, modas, x.malla, h1 = 0.3, h2 = 0.5,
   } else {
 
     if(methods::is(data,"data.frame")){ data <- as.matrix(data)}
+
     # comprobamos si de hecho es una matriz o array
     if((!methods::is(data,"array") & !methods::is(data,"matrix")) | typeof(data) != "double" ){
       stop("`data` argument is neither a numeric matrix nor an array.")
@@ -96,13 +94,6 @@ PredPMS <- function(data, modas, x.malla, h1 = 0.3, h2 = 0.5,
   # calculamos la dimensión de la covariable
   dim = ncol(data) - 1
 
-  # comprobamos que el número de dimensiones sea correcto
-  # if (!methods::is(dim,"numeric")){
-  #   stop("Number of dimensions is not correct. Please, check `muestra` has more
-  #        than two columns.")
-  #
-  # }
-
   # Separamos la variable explicativa de la variable respuesta
   X = data[, 1:dim]
   Y = data[, dim+1]
@@ -113,19 +104,14 @@ PredPMS <- function(data, modas, x.malla, h1 = 0.3, h2 = 0.5,
     # de ser proveído un objeto modas, entonces construimos la malla con los puntos con los que esta fue calculada
     if(!missing(modas)){
       if(!methods::is(modas, "MRpms_modas")) {stop("`modas` is not an MRpms_modas object, please, use only an object result of an MRpms function package.")}
-      # if (missing(k)){
-      #   stop("Provide the desired number of Y values per x point on the `malla`, `k`.")
-      #
-      # }
+
       malla = mallador(data, x.malla = attr(modas,"x.malla"), k = k)
     } else{  # si no fue provisto un objeto `modas`, usamos los argumentos suministrados
-      # if(missing(k) | missing(l)){
-      #   stop("Not enough arguments to compute a `malla` object. Please, check `k` and `l` argument were provided.")
-      #
-      # }
+
       malla = mallador(data, k = k, len = len)
     }
   } else {
+
     # en caso de que tengamos ambos, comprobemos que están definidos sobre los mismos
     # puntos.
     if(!missing(modas)){
@@ -138,16 +124,21 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`..")
     }
   }
 
-
+  # obtenemos la información necesaria de la malla
   x.malla <- attr(malla,"x.malla")
   k <- attr(malla, "k")
   len <- attr(malla, "len")
   n = length(Y)
 
+  # en caso de que las modas no sean proporcionadas, se calculan.
   if(missing(modas)){
-        modas <- PMSc(X = X, Y = Y, malla = malla, dim = dim,
-                      h1 = h1, h2 = h2, p = p, eps = eps,
-                      n = n, k = k, len = len)
+    modas <- PMSc(X = X, Y = Y, malla = malla, dim = dim,
+                  h1 = h1, h2 = h2, p = p, eps = eps,
+                  n = n, k = k, len = len)
+    
+    # la función PMSc es más rápida, pero no devuelve un objeto modas.
+    modas <- structure(modas, x.malla = x.malla,
+                    class = "MRpms_modas")
   }
 
 
@@ -174,6 +165,6 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`..")
     graphics::points(xg, yg + epsh, col = "grey", pch = 19, cex = 0.4)
     graphics::points(xg, yg, col = "red", pch = 19 )
   }
+
   return(list(modas = modas, x.malla = x.malla, epsh = epsh))
-  # return(epsh)
 }

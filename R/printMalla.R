@@ -1,4 +1,5 @@
-#' @exportS3Method
+#' @export
+#' @method print MRpms_malla
 
 print.MRpms_malla <- function(x, ...){
     y <- as.numeric(x)

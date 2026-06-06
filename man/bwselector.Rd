@@ -5,32 +5,39 @@
 \title{Bandwith selector}
 \usage{
 bwselector(
-  muestra,
-  malla = mallador(muestra, x.malla = X),
+  data,
+  malla = mallador(data, x.malla = X),
   eps = 1e-08,
   conf.level = 0.95,
-  metodo = "CV",
-  eps2 = 0.001
+  method = "CV",
+  eps2 = 0.001,
+  maxiter = 100,
+  maxiter.tol = 10
 )
 }
 \arguments{
-\item{muestra}{Matrix containing the sample.}
+\item{data}{Matrix or data frame containing the sample. Currently, the response values are needed to be in
+the last column.}
 
 \item{malla}{Matrix containing the initial points used to compute the modes
 using the Partial Mean-Shift algorithm. If not provided,
 \code{mallador}function is called. It must be a MRpms_malla class object.}
 
-\item{eps}{PMS convergence tolerance.}
+\item{eps}{Convergence tolerance for Partial Mean-Shift algorithm.}
 
 \item{conf.level}{Confidence level for prediction sets (if \code{metodo}=\code{P}).}
 
-\item{metodo}{\code{CV} (default) for Zhao and Huang selector or \code{P} for
+\item{method}{\code{CV} (default) for Zhao and Huang selector or \code{P} for
 Chen et al. selector based on the size of prediction sets.}
 
 \item{eps2}{Convergence tolerance for heuristic algorithm.}
+
+\item{maxiter}{Maximum number of iterations for heuristic algorithm.}
+
+\item{maxiter.tol}{Maximum number of consecutive iterations without improvement in heuristic algorithm before termination.}
 }
 \value{
-A vector with two elements, \code{h1} and \code{h2}.
+A vector with two elements, \code{h1} and \code{h2}, first one been for covariable and second one for response.
 }
 \description{
 Performs an heuristic search based on the Nedler-Mead algorithm to find
@@ -54,4 +61,8 @@ Zhou, H. and Huang, X. (2019).
 \emph{Bandwidth selection for nonparametric modal regression}.
 Communication in Statistics - Simulation and Computation,
 \strong{48}(4), 968--984.
+
+Luersen, M., Le Riche, R. and Guyon, F. (2004).
+\emph{A constrained, globalized, and bounded Nelder–Mead method for engineering optimization.}
+Structural and Multidisciplinary Optimization, \strong{27}(1). 43--54.
 }
