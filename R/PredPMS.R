@@ -3,11 +3,12 @@
 #' Computes a uniform prediction set for the response value.
 #'
 #'
-#' @param data Matrix or data frame containing the sample.
+#' @param data Matrix or data frame containing the sample. Currently,
+#' the last column is needed to be de response values.
 #'
 #' @param modas List containing the estimated set of conditional local
 #' modes on each covariate point in `malla`. In case modas missing,
-#' PMSc is called to compute them. It must be a MRpms_modas class object.
+#' PMSc is called to compute them. It must be a `MRpms_modas` class object.
 #'
 #' @param x.malla Set of covariate points where the modes will be estimated.
 #'  Not needed if `modas` is provided.
@@ -15,6 +16,8 @@
 #' @param h1 Smoothing parameter for covariates.
 #'
 #' @param h2 Smoothing parameter for response variable.
+#' 
+#' @param dim.y Response dimension.
 #'
 #' @param eps Convergence tolerance and threshold to discriminate between modes.
 #'
@@ -29,11 +32,13 @@
 #'  modes using the Partial Mean-Shift algorithm. If not provided,
 #'  `mallador` function is called. It must be a MRpms_malla class object.
 #'
-#' @return A list. First entry is a list containing the estimated set of
-#' conditional local modes for each point in `x.malla`, the second element.
-#' Third element is the radius of the prediction set.
+#' @return An `MRpms_pred` object which contains,
+#' * `modas`: an `MRpms_modas` object with the adjusted modes,
+#' * `epsh`: the radius of the uniform prediction set.
+#' * `conf.level`: the confidence level used to compute `epsh`.
+#' 
 #' Aditionally, the prediction set and the estimated modes are plotted in case 
-#' `dim` is `1`.
+#' `dim.x` and `dim.y` are `1`.
 #'
 #' @references
 #' Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
@@ -44,7 +49,7 @@
 #'
 #' @export
 
-PredPMS <- function(data, modas, x.malla, h1 = 0.3, h2 = 0.5,
+PredPMS <- function(data, modas, x.malla, h1 = 0.3, h2 = 0.5, dim.y = 1,
                     eps = 1e-8, conf.level = 0.95, k = 10, len = 200, malla){
 
   # comprobación de los argumentos suministrados:
@@ -92,11 +97,11 @@ PredPMS <- function(data, modas, x.malla, h1 = 0.3, h2 = 0.5,
 
 
   # calculamos la dimensión de la covariable
-  dim = ncol(data) - 1
+  dim.x = ncol(data) - 1
 
   # Separamos la variable explicativa de la variable respuesta
-  X = data[, 1:dim]
-  Y = data[, dim+1]
+  X = data[, 1:dim.x]
+  Y = data[, dim.x+1:dim.y]
 
   # si no se da una malla, se especifica una
   if(missing(malla)){
@@ -116,7 +121,7 @@ PredPMS <- function(data, modas, x.malla, h1 = 0.3, h2 = 0.5,
     # puntos.
     if(!missing(modas)){
       if(!methods::is(modas, "MRpms_modas")) stop("`modas` is not an MRpms_modas object, please, use only an object result of an MRpms function package.")
-      if(attr(modas,"x.malla") != attr(malla,"x.malla")){
+      if(modas$x.malla != attr(malla,"x.malla")){
         stop("`x.malla` in `malla` object and `modas` object are not equal.
 Please, provide a `malla` object built over the same `x.malla` as `modas`..")
 
@@ -132,13 +137,23 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`..")
 
   # en caso de que las modas no sean proporcionadas, se calculan.
   if(missing(modas)){
-    modas <- PMSc(X = X, Y = Y, malla = malla, dim = dim,
+    modas <- PMSc(X = X, Y = Y, malla = malla, dim = dim.x,
                   h1 = h1, h2 = h2, p = p, eps = eps,
                   n = n, k = k, len = len)
     
     # la función PMSc es más rápida, pero no devuelve un objeto modas.
-    modas <- structure(modas, x.malla = x.malla,
-                    class = "MRpms_modas")
+    dims.aux <- c(dim.x,dim.y)
+    names(dims.aux) <- c("X", "Y")
+    hs <- c(h1,h2)
+    names(hs) <- c("X","Y")
+    # construimos el objeto MRpms_modas
+    modas <- structure(
+                      list( modas = modas,
+                      x.malla = attr(malla,"x.malla"),
+                      dims = dims.aux,
+                      h <- hs
+                    ),
+                      class = "MRpms_modas")
   }
 
 
@@ -148,23 +163,24 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`..")
   #                                                                  ymalla = malla.aux[(i-1)*k+(1:k),dim+1],
   #                                                                  h1 = h1, h2 = h2,eps = eps, k = k, n = n)),p-2)))
   len.aux <- attr(malla.aux, "len")
-  aux <- PMSc(X = X, Y = Y, malla = malla.aux, dim = dim,
+  aux <- PMSc(X = X, Y = Y, malla = malla.aux, dim = dim.x,
                 h1 = h1, h2 = h2, p = p, eps = eps,
                 n = n, k = k, len = len.aux)
 
 
   epsh <- stats::quantile(sapply(1:n, function(i) min(abs(Y[i] - aux[[i]]))), conf.level)
 
-  if(dim == 1){
+  if(dim.x == 1L & dim.y == 1L){
     plot(X, Y)
-    ni <- lapply(modas, length)
+    ni <- lapply(modas$modas, length)
     xg <- rep(x.malla, times = ni)
-    yg <- unlist(modas)
+    yg <- unlist(modas$modas)
     sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-epsh, yg[i]+epsh), col ="lightgrey", lwd = 1.5))
     graphics::points(xg, yg - epsh, col = "grey", pch = 19, cex = 0.4)
     graphics::points(xg, yg + epsh, col = "grey", pch = 19, cex = 0.4)
     graphics::points(xg, yg, col = "red", pch = 19 )
   }
-
-  return(list(modas = modas, x.malla = x.malla, epsh = epsh))
+  salida <- list(modas = modas, epsh = epsh, conf.level = conf.level)
+  class(salida) <- "MRpms_pred"
+  return(salida)
 }

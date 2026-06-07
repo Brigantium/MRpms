@@ -4,7 +4,8 @@
 #' and plots them along with the estimated modes over the given sample.
 #' (Warning: a large number of bootstrap replications increases execution time).
 #'
-#' @param data Matrix or data frame containing the sample.
+#' @param data Matrix or data frame containing the sample. Currently, the last column is
+#' needed to be the response values.
 #'
 #' @param modas List containing the estimated set of conditional local modes
 #' on each covariate point in `malla`. In case `modas` missing,
@@ -19,6 +20,8 @@
 #' @param h2 Smoothing parameter for response variable.
 #'
 #' @param eps PMS convergence tolerance.
+#' 
+#' @param dim.y Response dimension.
 #'
 #' @param k Number of Y values per x point in the `malla` object created.
 #'
@@ -34,10 +37,10 @@
 #'
 #' @param seed Seed for the _bootstrap_ simulations.
 #'
-#' @return A list. First entry is a list containing the estimated set of
+#' @return A list. First entry is an `MRpms_modas` object containing the estimated set of
 #' conditional local modes for each `x` point in the `malla`. If `type` is 0 or 2,
 #' returns a vector with the estimated pointwise errors (`deltax`).
-#' If `type` is 1 or 2, returns the estimated uniform error (`delta`). In case `dim` is `1`,
+#' If `type` is 1 or 2, returns the estimated uniform error (`delta`). In case `dim.y` and `dim.x` are `1`,
 #' a plot with the desired regions is printed.
 #'
 #' @references
@@ -51,7 +54,7 @@
 #' @export
 
 
-ConfPMS <- function(data, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
+ConfPMS <- function(data, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8, dim.y = 1,
                     k = 10, len = 200, conf.level = 0.95, B = 30, type = 2,
                     seed = 2026){
 
@@ -99,10 +102,10 @@ ConfPMS <- function(data, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
   }
 
   # calculamos la dimensión de la covariable
-  dim = ncol(data) - 1
+  dim.x = ncol(data) - dim.y
   # Separamos la variable explicativa de la variable respuesta
-  X = data[,1:dim]
-  Y = data[,dim+1]
+  X = data[,1:dim.x]
+  Y = data[,dim.x+1:dim.y]
 
   # si no se da una malla, se especifica una
   if(missing(malla)){
@@ -122,7 +125,7 @@ ConfPMS <- function(data, modas, malla, h1 = 0.3, h2 = 0.5, eps = 1e-8,
     # puntos.
     if(!missing(modas)){
       if(!methods::is(modas, "MRpms_modas")) stop("`modas` is not an MRpms_modas object, please, use only an object result of an MRpms function.")
-      if(attr(modas,"x.malla") != attr(malla,"x.malla")){
+      if(modas$x.malla != attr(malla,"x.malla")){
         stop("`x.malla` in `malla` object and `modas` object are not equal.
 Please, provide a `malla` object built over the same `x.malla` as `modas`.")
 
@@ -140,30 +143,40 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`.")
   if(missing(modas)){
 
     modas <- PMSc(X = X, Y= Y, malla = malla, h1 = h1, h2 = h2,
-                  p = p, eps = eps, dim = dim, n = n, k = k, len = len)
+                  p = p, eps = eps, dim = dim.x, n = n, k = k, len = len)
     
     # la función PMSc es más rápida, pero no devuelve un objeto modas.
-    modas <- structure(modas, x.malla = x.malla,
-                        class = "MRpms_modas")
+    dims.aux <- c(dim.x,dim.y)
+    names(dims.aux) <- c("X", "Y")
+    hs <- c(h1,h2)
+    names(hs) <- c("X","Y")
+    # construimos el objeto MRpms_modas
+    modas <- structure(
+                      list( modas = modas,
+                      x.malla = attr(malla,"x.malla"),
+                      dims = dims.aux,
+                      h <- hs
+                    ),
+                      class = "MRpms_modas")
   }
 
-  salida <- list(modas = modas, x.malla = x.malla)
+  salida <- list(modas = modas)
 
   # graficamos las modas calculadas en el caso unidimensional
-  if (dim == 1L){
+  if (dim.x == 1L & dim.y == 1L){
     plot(X, Y)
-    ni <- lapply(modas, length)
+    ni <- lapply(modas$modas, length)
     xg <- rep(x.malla, times = ni)
-    yg <- unlist(modas)
+    yg <- unlist(modas$modas)
   }
 
   # calculamos los distintos radios puntuales
-  X <- matrix(X, ncol=dim)
+  X <- matrix(X, ncol=dim.x)
   set.seed(seed)
-  Deltasbx <- replicate(B, Deltas(X = X, Y = Y, modas = modas,
+  Deltasbx <- replicate(B, Deltas(X = X, Y = Y, modas = modas$modas,
                                    malla = malla, n = n, k = k, len = len,
                                    h1 = h1, h2 = h2, p = p, eps = eps,
-                                   dim = dim))
+                                   dim = dim.x))
 
   if(type != 0L & type != 1L & type != 2L){
     stop("Please, select `type` between 0, 1 and 2.")
@@ -173,7 +186,7 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`.")
     Deltasb <- apply(Deltasbx, 2, max)
     delta <- stats::quantile(Deltasb, conf.level)
 
-    if (dim == 1L){
+    if (dim.x == 1L & dim.y == 1L){
       sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-delta, yg[i]+delta), col ="lightgrey", lwd = 1.5))
       graphics::points(xg, yg - delta, col = "grey", pch = 19, cex = 0.4)
       graphics::points(xg, yg + delta, col = "grey", pch = 19, cex = 0.4)
@@ -185,11 +198,13 @@ Please, provide a `malla` object built over the same `x.malla` as `modas`.")
   if(type==0 | type==2){
     deltasx <- apply(Deltasbx, 1, function(x) stats::quantile(x, conf.level))
     radio <- rep(deltasx, ni)
-    if (dim == 1L) sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-radio[i], yg[i]+radio[i]), col ="blue", lwd = 1.5))
-    salida <- append(salida, list(deltax = radio))
+    if (dim.x == 1L & dim.y == 1L) sapply(1:length(xg), function(i) graphics::lines(rep(xg[i],2), c(yg[i]-radio[i], yg[i]+radio[i]), col ="blue", lwd = 1.5))
+    salida <- append(salida, list(deltax = deltasx))
   }
 
-  if (dim == 1L) graphics::points(xg, yg, col = "red", pch = 19)
+  if (dim.x == 1L & dim.y == 1L) graphics::points(xg, yg, col = "red", pch = 19)
 
+  salida <- append(salida, list(conf.level = conf.level))
+  class(salida) <- "MRpms_conf"
   return(salida)
 }

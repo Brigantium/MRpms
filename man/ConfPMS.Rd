@@ -11,6 +11,7 @@ ConfPMS(
   h1 = 0.3,
   h2 = 0.5,
   eps = 1e-08,
+  dim.y = 1,
   k = 10,
   len = 200,
   conf.level = 0.95,
@@ -20,7 +21,8 @@ ConfPMS(
 )
 }
 \arguments{
-\item{data}{Matrix or data frame containing the sample.}
+\item{data}{Matrix or data frame containing the sample. Currently, the last column is
+needed to be the response values.}
 
 \item{modas}{List containing the estimated set of conditional local modes
 on each covariate point in \code{malla}. In case \code{modas} missing,
@@ -35,6 +37,8 @@ using the Partial Mean-Shift algorithm. If not provided,
 \item{h2}{Smoothing parameter for response variable.}
 
 \item{eps}{PMS convergence tolerance.}
+
+\item{dim.y}{Response dimension.}
 
 \item{k}{Number of Y values per x point in the \code{malla} object created.}
 
@@ -51,10 +55,10 @@ the confidence sets.}
 \item{seed}{Seed for the \emph{bootstrap} simulations.}
 }
 \value{
-A list. First entry is a list containing the estimated set of
+A list. First entry is an \code{MRpms_modas} object containing the estimated set of
 conditional local modes for each \code{x} point in the \code{malla}. If \code{type} is 0 or 2,
 returns a vector with the estimated pointwise errors (\code{deltax}).
-If \code{type} is 1 or 2, returns the estimated uniform error (\code{delta}). In case \code{dim} is \code{1},
+If \code{type} is 1 or 2, returns the estimated uniform error (\code{delta}). In case \code{dim.y} and \code{dim.x} are \code{1},
 a plot with the desired regions is printed.
 }
 \description{

@@ -2,7 +2,7 @@
 #'
 #' Finds the local modes of `data` conditional on a given set of covariate values.
 #'
-#' @param data Matrix or data frame containing the sample.
+#' @param data Matrix or data frame containing the sample. Currently, the last column is needed to be the response values.
 #'
 #' @param x.malla Set of covariate points where the modes will be estimated.
 #'
@@ -15,13 +15,18 @@
 #' @param k Number of Y values per x point in the `malla` object created.
 #'
 #' @param len Number of different X points in the `malla` object.
+#' 
+#' @param dim.y Response dimension.
 #'
 #' @param malla Matrix containing the initial points used to compute the modes
 #' with the Partial Mean-Shift algorithm. If not provided,
 #' `mallador`function is called. It must be a `MRpms_malla` class object.
 #'
-#' @return A list containing the estimated local modes conditional on the values
-#'  of the covariate appearing in `x.malla`. In addition, `x.malla` is returned as an attribute.
+#' @return A `MRpms_modas` object, which contains
+#' * `$modas`: contains the estimated local modes conditional on the values
+#'  of the covariate appearing in `x.malla`; 
+#' * `$x.malla`: with each covariable point where modes were computed;
+#' * `$dims`: Covariable and response dimensions. 
 #'
 #' @references
 #' Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
@@ -29,13 +34,12 @@
 #'
 #' @examples
 #' modas <- PMS(twosines)
-#' plot(twosines)
-#' plot(modas, pch = 19, col = "red")
+#' plot(modas,twosines,pch = 19, col = "red")
 #'
 #' @export
 
 PMS <- function(data, x.malla = NULL,
-                h1 = 0.3, h2 = 0.5, eps = 1e-8, k = 10 , len = 200,
+                h1 = 0.3, h2 = 0.5, eps = 1e-8, k = 10 , len = 200, dim.y = 1,
                 malla = NULL){
 
 
@@ -73,7 +77,7 @@ PMS <- function(data, x.malla = NULL,
     }
   }
 
-  dim = ncol(data) - 1
+  dim.x = ncol(data) - dim.y
 
 
   # en caso de que no sea dado un objeto malla, se calcula
@@ -93,13 +97,21 @@ PMS <- function(data, x.malla = NULL,
   n = nrow(data)
 
   # realizamos la estimación de las modas
-  modas <- PMSc(data[,1:dim], data[,dim+1], malla = malla,h1 = h1,h2 = h2, p = p, eps = eps, dim = dim,
+  modas <- PMSc(data[,1:dim.x], data[,dim.x+1:dim.y], malla = malla,h1 = h1,h2 = h2, p = p, eps = eps, dim = dim.x,
                            n = n, k = k, len = len)
 
-
+  
+  dims.aux <- c(dim.x,dim.y)
+  names(dims.aux) <- c("X", "Y")
+  hs <- c(h1,h2)
+  names(hs) <- c("X","Y")
   # construimos el objeto MRpms_modas
-  modas <- structure(modas,
+  modas <- structure(
+                    list( modas = modas,
                     x.malla = attr(malla,"x.malla"),
+                    dims = dims.aux,
+                    h <- hs
+                  ),
                     class = "MRpms_modas")
   return(modas)
 }

@@ -7,6 +7,7 @@
 bwselector(
   data,
   malla = mallador(data, x.malla = X),
+  dim.y = 1,
   eps = 1e-08,
   conf.level = 0.95,
   method = "CV",
@@ -22,6 +23,8 @@ the last column.}
 \item{malla}{Matrix containing the initial points used to compute the modes
 using the Partial Mean-Shift algorithm. If not provided,
 \code{mallador}function is called. It must be a MRpms_malla class object.}
+
+\item{dim.y}{Response dimension.}
 
 \item{eps}{Convergence tolerance for Partial Mean-Shift algorithm.}
 
@@ -49,8 +52,7 @@ might take some time to finish).
 h <- bwselector(twosines)
 modas <- PMS(twosines, h1 = h[1], h2 = h[2])
 
-plot(twosines)
-plot(modas, pch = 19, col = "red")
+plot(modas,twosines, pch = 19, col = "red")
 
 }
 \references{

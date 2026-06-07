@@ -52,3 +52,4 @@ Compute the volume of the uniform prediction set for a fitted model. First compu
 using cross-validation, compute the quantile for a given confidence level and later use Monte-Carlo integration. Currently,
 only works in the univariate case.
 }
+\keyword{internal}

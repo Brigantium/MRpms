@@ -12,11 +12,12 @@ PMS(
   eps = 1e-08,
   k = 10,
   len = 200,
+  dim.y = 1,
   malla = NULL
 )
 }
 \arguments{
-\item{data}{Matrix or data frame containing the sample.}
+\item{data}{Matrix or data frame containing the sample. Currently, the last column is needed to be the response values.}
 
 \item{x.malla}{Set of covariate points where the modes will be estimated.}
 
@@ -30,21 +31,27 @@ PMS(
 
 \item{len}{Number of different X points in the \code{malla} object.}
 
+\item{dim.y}{Response dimension.}
+
 \item{malla}{Matrix containing the initial points used to compute the modes
 with the Partial Mean-Shift algorithm. If not provided,
 \code{mallador}function is called. It must be a \code{MRpms_malla} class object.}
 }
 \value{
-A list containing the estimated local modes conditional on the values
-of the covariate appearing in \code{x.malla}. In addition, \code{x.malla} is returned as an attribute.
+A \code{MRpms_modas} object, which contains
+\itemize{
+\item \verb{$modas}: contains the estimated local modes conditional on the values
+of the covariate appearing in \code{x.malla};
+\item \verb{$x.malla}: with each covariable point where modes were computed;
+\item \verb{$dims}: Covariable and response dimensions.
+}
 }
 \description{
 Finds the local modes of \code{data} conditional on a given set of covariate values.
 }
 \examples{
 modas <- PMS(twosines)
-plot(twosines)
-plot(modas, pch = 19, col = "red")
+plot(modas,twosines,pch = 19, col = "red")
 
 }
 \references{

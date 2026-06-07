@@ -11,6 +11,8 @@
 #' @param malla Matrix containing the initial points used to compute the modes
 #' using the Partial Mean-Shift algorithm. If not provided,
 #' `mallador`function is called. It must be a MRpms_malla class object.
+#' 
+#' @param dim.y Response dimension.
 #'
 #' @param method `CV` (default) for Zhao and Huang selector or `P` for
 #' Chen et al. selector based on the size of prediction sets.
@@ -47,21 +49,20 @@
 #' h <- bwselector(twosines)
 #' modas <- PMS(twosines, h1 = h[1], h2 = h[2])
 #'
-#' plot(twosines)
-#' plot(modas, pch = 19, col = "red")
+#' plot(modas,twosines, pch = 19, col = "red")
 #'
 #' @export
 
-bwselector <- function(data, malla = mallador(data, x.malla = X),
+bwselector <- function(data, malla = mallador(data, x.malla = X), dim.y = 1,
                        eps = 1e-8, conf.level = 0.95, method="CV", eps2 = 1e-3,
                        maxiter = 100, maxiter.tol = 10){
 
   # calculamos la dimensión de la covariable
-  dim <- ncol(data) - 1
+  dim.x <- ncol(data) - dim.y
 
   # separamos la covariable de la variable respuesta
-  X <- data[,1:dim]
-  Y <- data[,dim+1]
+  X <- data[,1:dim.x]
+  Y <- data[,dim.x+dim.y]
 
   # calculamos el tamaño muestral
   n <- length(Y)
@@ -78,14 +79,14 @@ bwselector <- function(data, malla = mallador(data, x.malla = X),
     k <-attr(malla, "k")
 
     # cálculo del volumen del soporte de la covariable
-    if (dim == 1L){
+    if (dim.x == 1L){
       lensopx <- max(X) - min(X)
     } else {
-      lensopx <- sapply(1:dim, function(i) max(X[,i])) - sapply(1:dim, function(i) min(X[,i]))
+      lensopx <- sapply(1:dim.x, function(i) max(X[,i])) - sapply(1:dim.x, function(i) min(X[,i]))
     }
 
     # definimos entonces la medida como el voluen de los conjuntos de predicción 
-    medida <- function(h){hP(X = X, Y = Y, malla = malla, dim = dim,
+    medida <- function(h){hP(X = X, Y = Y, malla = malla, dim = dim.x,
                                   h1 = h[1], h2 = h[2], eps = eps, p = p,
                                   n = n, conf.level = conf.level, k = k,
                                   lensopx = lensopx)}
@@ -93,12 +94,12 @@ bwselector <- function(data, malla = mallador(data, x.malla = X),
   }else{
 
     # en el caso de la cross-validation empleamos la función sugerida por Zhou y Huang.
-    medida <- function(h){CVC(X = X, Y = Y, malla = malla, dim = dim,
+    medida <- function(h){CVC(X = X, Y = Y, malla = malla, dim = dim.x,
                               h1 = h[1], h2 = h[2], p = p, eps = eps, n = n)}
   }
 
-  # definimos el número de vértices, es decir el número de h buscados más uno
-  nsimplex <- dim + 1
+  
+  nsimplex <- dim.x + dim.y
   h0 <- c(max(X)-min(X),max(Y)-min(Y))/10 # h inicial (va a ser necesario cambiarlo)
   as <- min(h0) # volumen inicial de simplex
   qs <- as/(nsimplex)/sqrt(2)*(sqrt(nsimplex+1)-1) # ver paper A constraines, globalized and bound Nelder-Mead

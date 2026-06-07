@@ -30,7 +30,7 @@
 #' 
 #' @return The volume of the estimated uniform prediction set.
 #' 
-#' 
+#' @keywords internal
 
 
 hP <-function(X, Y, malla, dim = 1, h1, h2,

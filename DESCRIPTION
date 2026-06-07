@@ -1,6 +1,6 @@
 Package: MRpms
 Title: Modal Regression with partial mean-shift
-Version: 0.9.2.010
+Version: 0.9.2.910
 Authors@R: c(
     person(given = "Iker", family = "Rodríguez Rodríguez", email = "iker.rodriguez.rodriguez@rai.usc.es", role = c("aut", "cre")),
     person(given = "Ángel Antonio", family = "Pérez Balo", email = "angelantonio.perez@rai.usc.es", role = "aut")

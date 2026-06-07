@@ -10,6 +10,7 @@ PredPMS(
   x.malla,
   h1 = 0.3,
   h2 = 0.5,
+  dim.y = 1,
   eps = 1e-08,
   conf.level = 0.95,
   k = 10,
@@ -18,11 +19,12 @@ PredPMS(
 )
 }
 \arguments{
-\item{data}{Matrix or data frame containing the sample.}
+\item{data}{Matrix or data frame containing the sample. Currently,
+the last column is needed to be de response values.}
 
 \item{modas}{List containing the estimated set of conditional local
 modes on each covariate point in \code{malla}. In case modas missing,
-PMSc is called to compute them. It must be a MRpms_modas class object.}
+PMSc is called to compute them. It must be a \code{MRpms_modas} class object.}
 
 \item{x.malla}{Set of covariate points where the modes will be estimated.
 Not needed if \code{modas} is provided.}
@@ -30,6 +32,8 @@ Not needed if \code{modas} is provided.}
 \item{h1}{Smoothing parameter for covariates.}
 
 \item{h2}{Smoothing parameter for response variable.}
+
+\item{dim.y}{Response dimension.}
 
 \item{eps}{Convergence tolerance and threshold to discriminate between modes.}
 
@@ -45,11 +49,15 @@ modes using the Partial Mean-Shift algorithm. If not provided,
 \code{mallador} function is called. It must be a MRpms_malla class object.}
 }
 \value{
-A list. First entry is a list containing the estimated set of
-conditional local modes for each point in \code{x.malla}, the second element.
-Third element is the radius of the prediction set.
+An \code{MRpms_pred} object which contains,
+\itemize{
+\item \code{modas}: an \code{MRpms_modas} object with the adjusted modes,
+\item \code{epsh}: the radius of the uniform prediction set.
+\item \code{conf.level}: the confidence level used to compute \code{epsh}.
+}
+
 Aditionally, the prediction set and the estimated modes are plotted in case
-\code{dim} is \code{1}.
+\code{dim.x} and \code{dim.y} are \code{1}.
 }
 \description{
 Computes a uniform prediction set for the response value.

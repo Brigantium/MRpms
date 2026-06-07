@@ -49,13 +49,13 @@ SEXP PMSC(SEXP Xarg, SEXP Yarg, SEXP mallarg, SEXP dimarg, SEXP h1arg, SEXP h2ar
     double *unique_modas_aux = (double*)malloc(sizeof(double)*k);
 
     // comenzamos a limpiar los valores para quedarnos con las modas procesadas
-    unique_modas_aux[nmodas] = (double)round(modas_aux[0]*(double)pow(10.,(p-2)))/(double)pow(10.,(p-2));
+    unique_modas_aux[nmodas] = (double)floor(modas_aux[0]*(double)pow(10.,(p-2)))/(double)pow(10.,(p-2));
     nmodas++; //contamos la primera moda
     
   
     // realizamos le proceso de búsqueda de las modas únicas
     for(int j = 1; j<k;j++){
-      modas_aux[j] = (double)round(modas_aux[j]*(double)pow(10.,(p-2)))/(double)pow(10.,(p-2)); // procesamos la moda
+      modas_aux[j] = (double)floor(modas_aux[j]*(double)pow(10.,(p-2)))/(double)pow(10.,(p-2)); // procesamos la moda
       
       moda_distinta = 1;
       for(int it = 0;it<nmodas;it++){
