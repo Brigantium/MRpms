@@ -28,9 +28,9 @@ using the Partial Mean-Shift algorithm. If not provided,
 
 \item{eps}{Convergence tolerance for Partial Mean-Shift algorithm.}
 
-\item{conf.level}{Confidence level for prediction sets (if \code{metodo}=\code{P}).}
+\item{conf.level}{Confidence level for prediction sets (if \code{method = P}).}
 
-\item{method}{\code{CV} (default) for Zhao and Huang selector or \code{P} for
+\item{method}{\code{CV} (by default) for Zhou and Huang selector or \code{P} for
 Chen et al. selector based on the size of prediction sets.}
 
 \item{eps2}{Convergence tolerance for heuristic algorithm.}
@@ -47,6 +47,66 @@ Performs an heuristic search based on the Nedler-Mead algorithm to find
 appropiate values for the bandwith parameters \code{h1} and \code{h2}.
 (Warning: this is a computationally requiring method which
 might take some time to finish).
+}
+\details{
+This function allows a Nelder-Mead based search of smooth parameter. There is two diferent measurments:
+\itemize{
+\item If \code{method = CV} then the algorithm uses the cross-validation like formula suggested by Zhou and Huang as degree of
+fitting,
+\deqn{f(\mathbf h) = \displaystyle \frac{1}{n}\sum_{i=1}^n d^2\left(\widehat{M}_{n,\mathbf{h},-i}\left(X_i\right),Y_i\right)\widehat{N}_{\mathbf{h},-i}^2\left(X_i\right)w\left(X_i\right),}
+where \eqn{\widehat M_{n,\mathbf{h},-i}(X_i)} is the estimated modes in \eqn{X_i} without consider \eqn{X_i} and \eqn{\widehat{N}_{\mathbf{h},-i}^2\left(X_i\right)w\left(X_i\right)}
+is the number of modes estimated in \eqn{X_i}.
+\item If \code{method = P} then uses the volume of prediction sets instead as measurement of fitting,
+\deqn{f(\mathbf h) = \displaystyle Vol\left(\widehat{\mathcal{P}}_{1-\alpha,\mathbf{h}}\right)=\widehat{\varepsilon}_{1-\alpha,\mathbf{h}}\int_{x\in D}\widehat{N}_{\mathbf{h}}(x)\, dx,}
+where \eqn{\mathcal {\widehat P}_{1-\alpha, \mathbf {h}}} is the estimation of the prediction set, i.e. a set for which \eqn{\mathbb{P}(Y\in \mathcal P \geq 1-\alpha)};
+\eqn{\hat \varepsilon_{1-\alpha,\mathbf h}} is the estimation of the \eqn{1-\alpha} quantile of the random
+variable \eqn{d(Y,M(X))}, computed as the sample quantile of the sample \eqn{\{d(Y_i,\widehat{M}_{n,\mathbf h}(X_i))\,\colon i \in \{1,\dots,n\}\}};
+and \eqn{\widehat{N}_{\mathbf h}(x)} is the estimated number of modes condicional to \eqn{X = x}.
+}
+\subsection{\strong{Nelder-Mead algorithm:}}{
+
+Selected the ranking method, the algorithm preforms a Nelder-Mead heuristic strategy to minimize \eqn{f}. This proccess
+starts with 3 different candidates to \eqn{\mathbf h}: \eqn{\mathbf h_1}, \eqn{\mathbf h_2} and \eqn{\mathbf h_3}.
+In each one computes \eqn{f(\mathbf h_i)}. Now, the idea is the same in each iteration:
+\enumerate{
+\item Firstly, the \eqn{f(\mathbf h_i)} values are ordered, without lost of generality: \eqn{f(\mathbf h_1) \leq f(\mathbf h_2) \leq f(\mathbf h_3)}.
+\item the centroid of \eqn{\mathbf h_1} and \eqn{\mathbf h_2} is computed (\eqn{\mathbf h_0}), i.e., the mean point in coordinate terms —plus certain tolerance to avoid zeros—.
+
+NOTE: the original Nelder-Mead algorithm allows
+only unrestricted spaces, in other words the entirety of \eqn{\mathbb R^n}. To bypass this, we previously transform through
+a natural logarithm function the espace where the smooth parameters lives, \eqn{(\mathbb{R}^{+})^n}, to \eqn{\mathbb R^n}. So, we
+will work always with \eqn{\log \mathbf h} except when evaluate \eqn{f}.
+\item \strong{Reflection}: we compute a new candidate: \eqn{\mathbf h_r = \mathbf h_0 + \alpha(\mathbf h_0 - \mathbf h_3)}, with \eqn{\alpha > 0}, and compute\eqn{f(\mathbf h_r)}:
+
+NOTE: we use \eqn{\alpha = 1}.
+\itemize{
+\item if \eqn{f(\mathbf h_1) < f(\mathbf h_r) < f(\mathbf h_2)} (not enough improvement): replace \eqn{\mathbf h_3} with \eqn{\mathbf h_r} and go to (1.).
+\item if \eqn{f(\mathbf h_r) < f(\mathbf h_1)} (improvement): go to (4.).
+\item if \eqn{f(\mathbf h_2) <f(\mathbf h_r)} (no improvement): go to (5.).
+}
+\item \strong{Expansion}: we compute a new candidate: \eqn{\mathbf h_e = \mathbf h_0 + \gamma(\mathbf h_r - \mathbf h_0)}, with \eqn{\gamma  >1}, then
+
+NOTE: we use \eqn{\gamma = 2}.
+\itemize{
+\item if \eqn{f(\mathbf h_e) < f(\mathbf h_r)} then replace \eqn{\mathbf h_3} with \eqn{\mathbf h_e} and go to (1.).
+\item if \eqn{f(\mathbf h_r) < f(\mathbf h_e)} then replace \eqn{\mathbf h_3} with \eqn{\mathbf h_r} and go to (1.).
+}
+\item \strong{Contraction}: two situations:
+\itemize{
+\item if \eqn{f(\mathbf h_r) < f(\mathbf h_3)} then compute a new candidate: \eqn{\mathbf h_c = \mathbf h_0 + \rho (\mathbf h_r - \mathbf h_0)}, with \eqn{0<\rho \leq 0.5}.
+\item if \eqn{f(\mathbf h_3) < f(\mathbf h_r)} then compute a new condadte: \eqn{\mathbf h_c = \mathbf h_0 + \rho (\mathbf h_3 - \mathbf h_0)}, with \eqn{0 < \rho \leq 0.5}.
+}
+
+In case of improvement, i.e. \eqn{f(\mathbf h_c) < \min\{f(\mathbf h_3),f(\mathbf h_r)\}},  replace \eqn{\mathbf h_3} with \eqn{\mathbf h_c}. In other case, go to (6.).
+
+NOTE: we use \eqn{\rho = 1/2}
+\item \strong{Shrink}: Fixed \eqn{\mathbf h_1}, replace the others with \eqn{\mathbf h_i = \mathbf h_1 + \sigma (\mathbf h_i - \mathbf h_1)}. Returns to (1.).
+
+NOTE: we take \eqn{\sigma = 1/2}.
+}
+
+\strong{Exit criteria:} The heuristic strategy ends when the algorithm performs \code{maxiter} iterations or there is no improvement in \code{maxiter.tol} consecutive iterations.
+}
 }
 \examples{
 h <- bwselector(twosines)
