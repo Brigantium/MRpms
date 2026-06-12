@@ -27,6 +27,18 @@
 #' 
 #' @param maxiter.tol Maximum number of consecutive iterations without improvement in heuristic algorithm before termination.
 #'
+#' @param alpha Parameter of reflection in the Nelder-Mead algorithm.
+#' 
+#' @param gamma Parameter of expansion in the Nelder-Mead algorithm.
+#' 
+#' @param rho Parameter of contraction in the Nelder-Mead algorithm.
+#' 
+#' @param sigma Parameter of shrink in the Nelder-Mead algorithm.
+#' 
+#' @param initial.h Candidates to construct the initial simplex in the Nelder-Mead algorithm. Currently, there are needed
+#' only three diferent candidates saves by rows.
+#' 
+#' 
 #' @return
 #' A vector with two elements, `h1` and `h2`, first one been for covariable and second one for response.
 #'
@@ -127,7 +139,7 @@
 
 bwselector <- function(data, malla = mallador(data, x.malla = X), dim.y = 1,
                        eps = 1e-8, conf.level = 0.95, method="CV", eps2 = 1e-3,
-                       maxiter = 100, maxiter.tol = 10, alpha = 1, gamma = 2, rho = 1/2, sigma = 1/2){
+                       maxiter = 100, maxiter.tol = 10, alpha = 1, gamma = 2, rho = 1/2, sigma = 1/2, initial.hs){
 
   # calculamos la dimensión de la covariable
   dim.x <- ncol(data) - dim.y
@@ -172,10 +184,39 @@ bwselector <- function(data, malla = mallador(data, x.malla = X), dim.y = 1,
 
   
   nsimplex <- dim.x + dim.y
-  h0 <- c(max(X)-min(X),max(Y)-min(Y))/10 # h inicial (va a ser necesario cambiarlo)
-  as <- min(h0) # volumen inicial de simplex
-  qs <- as/(nsimplex)/sqrt(2)*(sqrt(nsimplex+1)-1) # ver paper A constraines, globalized and bound Nelder-Mead
-  hs <- t(rbind(h0, matrix(rep(h0 + rep(qs,nsimplex),2),byrow=TRUE,nrow=nsimplex) + diag(as/sqrt(2),nsimplex))) # los otros h para construir el simplex inicial
+
+  if(missing(initial.hs)){
+    h0 <- c(max(X)-min(X),max(Y)-min(Y))/10 # h inicial (va a ser necesario cambiarlo)
+    as <- min(h0) # volumen inicial de simplex
+    qs <- as/(nsimplex)/sqrt(2)*(sqrt(nsimplex+1)-1) # ver paper A constraines, globalized and bound Nelder-Mead
+    hs <- t(rbind(h0, matrix(rep(h0 + rep(qs,nsimplex),2),byrow=TRUE,nrow=nsimplex) + diag(as/sqrt(2),nsimplex))) # los otros h para construir el simplex inicial
+  } else {
+
+    if (is.null(dim(initial.hs))) stop("Please, provided an array with one candidate per row.")
+    
+    n.aux <- nrow(initial.hs)
+
+    if(n.aux < nsimplex+1) stop(paste0("Please, provided enough candidates, for this problem: ",nsimplex+1))
+    
+    alldiferent <- TRUE
+    # chek if there is any candidate equal to other
+    for(i in 1:(n.aux-1)){
+      candidate.aux <- initial.hs[i,]
+      for(j in (i+1):n.aux){
+        if(all(abs(candidate.aux - initial.hs[j,]) < eps2)){
+          alldiferent <- FALSE
+          stop("Please, provided different candidates.")
+        }
+      }
+    }
+
+    if(alldiferent){
+       hs <- t(initial.hs)
+    } else{
+      stop("Please, provided a valid initial set of candidates.")
+    }
+  }
+
 
   # plot(t(hs), pch = 19, col = "red", xlim=c(0,h0[1]+3*as),ylim=c(0,h0[2]+3*as)) ###
   # lines(t(cbind(hs,hs[,1])), col = "red") ###

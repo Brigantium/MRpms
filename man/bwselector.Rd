@@ -17,7 +17,8 @@ bwselector(
   alpha = 1,
   gamma = 2,
   rho = 1/2,
-  sigma = 1/2
+  sigma = 1/2,
+  initial.hs
 )
 }
 \arguments{
@@ -42,6 +43,17 @@ Chen et al. selector based on the size of prediction sets.}
 \item{maxiter}{Maximum number of iterations for heuristic algorithm.}
 
 \item{maxiter.tol}{Maximum number of consecutive iterations without improvement in heuristic algorithm before termination.}
+
+\item{alpha}{Parameter of reflection in the Nelder-Mead algorithm.}
+
+\item{gamma}{Parameter of expansion in the Nelder-Mead algorithm.}
+
+\item{rho}{Parameter of contraction in the Nelder-Mead algorithm.}
+
+\item{sigma}{Parameter of shrink in the Nelder-Mead algorithm.}
+
+\item{initial.h}{Candidates to construct the initial simplex in the Nelder-Mead algorithm. Currently, there are needed
+only three diferent candidates saves by rows.}
 }
 \value{
 A vector with two elements, \code{h1} and \code{h2}, first one been for covariable and second one for response.
@@ -114,6 +126,8 @@ NOTE: \emph{we take \eqn{\sigma = 1/2}}.
 \item The algorithm performs \code{maxiter} iterations or there is no improvement in \code{maxiter.tol} consecutive iterations.
 \item The standard deviation of \eqn{f(\mathbf h_1),\ f(\mathbf h_2)} and \eqn{f(\mathbf h_3)}, reescalated by the value of \eqn{f(\mathbf h_1)} is less than a certain tolerance \code{eps}.
 }
+
+Further details could be reviewed in Luersen, Le Riche and Guyon (2004).
 }
 }
 \examples{
