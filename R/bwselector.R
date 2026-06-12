@@ -56,14 +56,12 @@
 #' 
 #' 2. the centroid of \eqn{\mathbf h_1} and \eqn{\mathbf h_2} is computed (\eqn{\mathbf h_0}), i.e., the mean point in coordinate terms —plus certain tolerance to avoid zeros—. 
 #' 
-#'     NOTE: the original Nelder-Mead algorithm allows
+#'     NOTE: _the original Nelder-Mead algorithm allows
 #'         only unrestricted spaces, in other words the entirety of \eqn{\mathbb R^n}. To bypass this, we previously transform through 
 #'         a natural logarithm function the espace where the smooth parameters lives, \eqn{(\mathbb{R}^{+})^n}, to \eqn{\mathbb R^n}. So, we 
-#'         will work always with \eqn{\log \mathbf h} except when evaluate \eqn{f}.
+#'         will work always with \eqn{\log \mathbf h} except when evaluate \eqn{f}._
 #'
 #' 3. **Reflection**: we compute a new candidate: \eqn{\mathbf h_r = \mathbf h_0 + \alpha(\mathbf h_0 - \mathbf h_3)}, with \eqn{\alpha > 0}, and compute\eqn{f(\mathbf h_r)}:
-#' 
-#'     NOTE: we use \eqn{\alpha = 1}.
 #' 
 #'     * if \eqn{f(\mathbf h_1) < f(\mathbf h_r) < f(\mathbf h_2)} (not enough improvement): replace \eqn{\mathbf h_3} with \eqn{\mathbf h_r} and go to (1.).
 #' 
@@ -71,13 +69,15 @@
 #' 
 #'     * if \eqn{f(\mathbf h_2) <f(\mathbf h_r)} (no improvement): go to (5.).
 #' 
+#'     NOTE: _we use \eqn{\alpha = 1}_.
+#'  
 #' 4. **Expansion**: we compute a new candidate: \eqn{\mathbf h_e = \mathbf h_0 + \gamma(\mathbf h_r - \mathbf h_0)}, with \eqn{\gamma  >1}, then
-#' 
-#'     NOTE: we use \eqn{\gamma = 2}.
 #' 
 #'     * if \eqn{f(\mathbf h_e) < f(\mathbf h_r)} then replace \eqn{\mathbf h_3} with \eqn{\mathbf h_e} and go to (1.).
 #' 
 #'     * if \eqn{f(\mathbf h_r) < f(\mathbf h_e)} then replace \eqn{\mathbf h_3} with \eqn{\mathbf h_r} and go to (1.).
+#' 
+#'     NOTE: _we use \eqn{\gamma = 2}_.
 #' 
 #' 5. **Contraction**: two situations:
 #' 
@@ -87,14 +87,19 @@
 #' 
 #'     In case of improvement, i.e. \eqn{f(\mathbf h_c) < \min\{f(\mathbf h_3),f(\mathbf h_r)\}},  replace \eqn{\mathbf h_3} with \eqn{\mathbf h_c}. In other case, go to (6.).
 #'  
-#'     NOTE: we use \eqn{\rho = 1/2}
+#'     NOTE: _we use \eqn{\rho = 1/2}_.
 #' 
 #' 6. **Shrink**: Fixed \eqn{\mathbf h_1}, replace the others with \eqn{\mathbf h_i = \mathbf h_1 + \sigma (\mathbf h_i - \mathbf h_1)}. Returns to (1.).
 #' 
-#'     NOTE: we take \eqn{\sigma = 1/2}.
+#'     NOTE: _we take \eqn{\sigma = 1/2}_.
 #' 
-#'  **Exit criteria:** The heuristic strategy ends when the algorithm performs `maxiter` iterations or there is no improvement in `maxiter.tol` consecutive iterations.
+#'  **Exit criteria:** The heuristic strategy ends when anyone of this statements is true:
 #' 
+#'  * The algorithm performs `maxiter` iterations or there is no improvement in `maxiter.tol` consecutive iterations.
+#' 
+#'  * The standard deviation of \eqn{f(\mathbf h_1),\ f(\mathbf h_2)} and \eqn{f(\mathbf h_3)}, reescalated by the value of \eqn{f(\mathbf h_1)} is less than a certain tolerance `eps`.
+#' 
+#' Further details could be reviewed in Luersen, Le Riche and Guyon (2004).
 #' 
 #' @references
 #' Chen, Y.-C., Genovese, C. R., Tibshirani, R. J. and Wasserman, L. (2016).
@@ -120,11 +125,9 @@
 #' @export
 
 
-# PODRÍA SER UNA BUENA IDEA DEJAR AL USUARIO DECIDIR LOS PARÁMETROS DEL NELDER-MEAD, COMO ALPHA, GAMMA Y TODO ESO.
-
 bwselector <- function(data, malla = mallador(data, x.malla = X), dim.y = 1,
                        eps = 1e-8, conf.level = 0.95, method="CV", eps2 = 1e-3,
-                       maxiter = 100, maxiter.tol = 10){
+                       maxiter = 100, maxiter.tol = 10, alpha = 1, gamma = 2, rho = 1/2, sigma = 1/2){
 
   # calculamos la dimensión de la covariable
   dim.x <- ncol(data) - dim.y
@@ -206,7 +209,15 @@ bwselector <- function(data, malla = mallador(data, x.malla = X), dim.y = 1,
 
   while(stats::sd(medidashs)/fbueno > eps2){ # condición de parada: que la desviación típica reescalada por el mejor de los puntos sea menor a un cierto épsilon pes2
 
-    # buscamos el mejor, el peor y el segundo peor (feo)
+
+
+    # Step 1: evaluation
+    #####################################################
+    # we search for 
+    # - the best candidate (bueno), 
+    # - the worst (malo)
+    # - and the second worst (feo). 
+
     orden <- order(medidashs, decreasing = TRUE)
     bueno <- orden[nsimplex+1]
     feo <- orden[2]
@@ -220,47 +231,138 @@ bwselector <- function(data, malla = mallador(data, x.malla = X), dim.y = 1,
     ffeo <- medidashs[feo]
     fmalo <- medidashs[malo]
 
+    #- end: evaluaton -#################################
+
+    # --------------------------------------------------
+
+    # Step 2: centroid
+    ####################################################
+    # The centroid is computed using all the candidates save
+    # the worst (malo).
+
     # calculamos el punto medio de todos los puntos menos el peor
     x0 <- rowMeans(lhs[,-malo])
 
-    xr <- 2*x0 - xmalo              # reflection
+    #- end: centroid -##################################
+
+    # --------------------------------------------------
+
+    # Step 3: reflection
+    ####################################################
+    # A new candidate is computed, h_r, in the opposite
+    # direction to h_3 - h_0. 
+    #
+    #         h_r <··········· h_0 --------------- h_3
+    # Proportion:    alpha
+
+    # xr <- 2*x0 - xmalo  # versión optimizada si usamos los parámetros usuales de  # reflection
+
+    xr <- x0 + alpha*(x0 - xmalo)              # reflection
+
     # cat("Probando h=",exp(xr)+htol,"\n") ###
-    fxr <- medida(exp(xr)+htol)
 
-    if(fxr >= ffeo){             
+    fxr <- medida(exp(xr)+htol)    # evaluamos en el nuevo punto
 
+    #- end: reflection #################################
+
+
+    # now we check: f(h_r) > f(h_feo)
+    # - true: we proceded with Step 5: Contraction
+    # - false: we proceded with Step (4.) or (1.)
+    if(fxr >= ffeo){              
+
+      # --------------------------------------------------------------------
+
+      # check if the new candidate is better than the worst, f(h_r) < f(h_malo),
+      # - true: we proceded with Step 5: Contraction from the reflection candidate, h_r.
+      # - false: we proceded with Step 5: Contraction from the worst candidate, h_3.
       if(fxr < fmalo){
-        xc <- (x0+xr)/2          # Contraction
+
+        # Step 5: Contraction (case f(h_r) < f(h_malo))
+        ####################################################################
+        # If f(h_r) < f(h_malo) then we contract the new candidate through 
+        # the segment [h_0,h_r],
+        #                
+        #          h_0 ------- h_c <······················· h_r
+        # Proportion:    rho               1 - rho
+
+        # xc <- (x0+xr)/2  # optimized version when the usal parameters are used of   # Contraction
+
+        xc <- x0 + rho*(xr-x0)    # contraction
 
         # cat("Probando h=",exp(xc)+htol,"\n") ###
 
-        fxc <- medida(exp(xc)+htol)
-        if(fxc < fxr){
+        fxc <- medida(exp(xc)+htol)   # f(h_c)
+
+
+        if(fxc < fxr){  
+
+          # in case of not worsening, replace h_malo with h_c
           lhs[,malo] <- xc
           medidashs[malo] <- fxc
 
-        }else{                   # Shrink
-          xbueno <- lhs[,bueno]
-          lhs[,-bueno] <- apply(lhs[,-bueno], 2, function(x) (x + xbueno)/2)
+        }else{              # en caso contrario, pasamos al Paso 6
 
+          # Paso 6: Shrink 
+          #######################################################
+          # we shrink the simplex fixing the best candidate.
+          # 
+
+          xbueno <- lhs[,bueno]
+          # lhs[,-bueno] <- apply(lhs[,-bueno], 2, 
+          # function(x) (x + xbueno)/2)    # optimized version
+                                           #  when the usual parameters
+                                           #  are used                  # shrink
+
+          lhs[,-bueno] <- apply(lhs[,-bueno], 2, 
+            function(x) xbueno + sigma*(x - xbueno)/2)            # shrink
+          
           # for(i in (1:ncol(lhs))[-bueno]){
           #   cat("Probando h=",exp(lhs[,i])+htol,"\n") ###
           # }
 
           medidashs[-bueno] <- apply(exp(lhs[,-bueno])+htol, 2, function(h) medida(h))
+
+          #- end: Shrink -#########################################
+
         }
+
+        #- end: contraction -################################################
+
 
       }else{
-        xc <- (x0 + xmalo)/2
+
+        # Step 5: Contraction (case f(h_r) > f(h_malo))
+        ###################################################
+        # If f(h_r) > f(h_malo) then we compute through the
+        # segment [h_0,h_malo],
+        #
+        #         h_0 ------- h_c <························ h_malo
+        # proportion:   rho               1 - rho
+
+        # xc <- (x0 + xmalo)/2    # optimized version when the usual parameters are used     # contraction
+
+        xc <- x0 + rho*(xmalo - x0)  # contraction
 
         # cat("Probando h=",exp(xc)+htol,"\n") ###
         
         fxc <- medida(exp(xc)+htol)
+
         if(fxc < fmalo){
+
+          # in case of not worsening, replace h_malo with h_c
+
           lhs[,malo] <- xc
           medidashs[malo] <- fxc
 
+
         }else{                 # Shrink
+
+          # Paso 6: Shrink 
+          #######################################################
+          # we shrink the simplex fixing the best candidate.
+          # Proportion: sigma.
+
           xbueno <- lhs[,bueno]
           lhs[,-bueno] <- apply(lhs[,-bueno], 2, function(x) (x + xbueno)/2)
 
@@ -269,53 +371,89 @@ bwselector <- function(data, malla = mallador(data, x.malla = X), dim.y = 1,
           # }
 
           medidashs[-bueno] <- apply(exp(lhs[,-bueno])+htol, 2, function(h) medida(h))
+
+          #- end: shrink -#######################################
+
         }
+
+
+        #- end: reflection -#########################################################
+
+
+
         
       }
-    }else{
-      if(fxr >= fbueno){            # Reflection
+
+      # ----------------------------------------------------------------------------
+
+    }else{ # f(h_r) < f(h_feo)
+
+
+      # if h_r is better than the best, h_bueno, replace the later by the former.
+
+      if(fxr >= fbueno){
 
         lhs[,malo] <- xr
         medidashs[malo] <- fxr
 
-      }else{                        
+      }else{   # in case f(h_r) > f(h_bueno) ==> Step 4: expansion                     
+
+
+        # Step 4: expansion
+        ##################################################3
+        # The search is extended further in the direction of
+        #  h_r from h_0, computing a new candidate h_e,
+        #
+        #            h_e <················ h_r ----------------- h_0
+        # Proportion: |------------------ gamma ------------------|
 
         xe <- 2*xr - x0              # Expansion
 
         # cat("Probando h=",exp(xe)+htol,"\n") ###
 
-        fxe <- medida(exp(xe)+htol)
+        fxe <- medida(exp(xe)+htol) # the measurement is computed.
 
-        if(fxe < fxr){
+
+        if(fxe < fxr){ # if the expanded candidate, h_e, is better than the reflection, h_r
+                       # then replace the worst candidate, h_malo, with h_e.
 
           lhs[,malo] <- xe
           medidashs[malo] <- fxe
 
-        }else{
+        }else{ # if the expanded candidate, h_e, is worst than the reflection, h_r
+               # then replace the worst candidate, h_malo, with h_r. 
           lhs[,malo] <- xr
           medidashs[malo] <- fxr
         }
 
       }
+      
+
 
     }
+
+    #- end: check ---------------------------------------------------------------------
 
     # plot(t(exp(lhs)+htol), pch = 19, col = "red", xlim=c(0,h0[1]+3*as),ylim=c(0,h0[2]+3*as)) ###
     # lines(t(exp(cbind(lhs,lhs[,1]))+htol), col = "red") ###
 
-    it=it+1 # aumentamos el número de iteraciones
-    if(it == maxiter) break # en caso de llegar al número máximo de iteraciones terminamos
+
+    it=it+1 # the iteration counter is increased.
 
     lhb <- lhs[,which.min(medidashs)]
 
+    if(it == maxiter) break # if the maximum allowed number of iteration is reached, end.
+
+
     if(sqrt(sum(((exp(lhb)-exp(lhb0))/exp(lhb))^2)) < eps2) j <- j+1 else j <- 0  # si mejoramos, reiniciamos el contador
 
-    if(j == maxiter.tol) break # en caso de llevar muchas iteraciones sin mejorar, terminamos 
+    if(j == maxiter.tol) break # if there is not improvement in the pre-set tolerance number of iteration, ends.
+    
     lhb0 <- lhb
 
     # cat("Desv. Típica=",sd(medidashs),", it=",it,", j=",j,"\n") ###
 
   }
-
-  return(exp(lhs[,which.min(medidashs)])+htol)
+  return(exp(lhb0)+htol)
+  # return(exp(lhs[,which.min(medidashs)])+htol)
 }
