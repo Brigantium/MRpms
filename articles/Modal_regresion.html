@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">MRpms</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.0.000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.95.1.000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/Modal_regresion.html">Modal regression</a></li>
+    <li><a class="dropdown-item" href="../articles/Model_regresion.html">Model_regresion</a></li>
   </ul>
 </li>
       </ul>
@@ -91,7 +92,7 @@ La selección de una ventana adecuada es determinante para la estimación .
 <p>La <em>regresión modal</em> intenta resolver la problemática que surge cuando existe más de una tendencia en la relación entre la variable respuesta ya la variable explicativa. El caso paradigmático el cual podemos pensar es el de los <a href="../reference/twosines.html">dos senos</a>, representado en la Figura <a href="#fig:gtwosines">1.1</a>.</p>
 <div class="figure" style="text-align: center">
 <span style="display:block;" id="fig:gtwosines"></span>
-<img src="Modal_regresion_files/figure-html/gtwosines-1.png" alt="Dos senos perturbados con un error normal de varianza 0.3, con soporte entre 0 y 10 radiantes."><p class="caption">
+<img src="Modal_regresion_files/figure-html/gtwosines-1.png" alt="Dos senos perturbados con un error normal de varianza 0.3, con soporte entre 0 y 10 radiantes." width="432"><p class="caption">
 Figure 1.1: Dos senos perturbados con un error normal de varianza 0.3, con soporte entre 0 y 10 radiantes.
 </p>
 </div>
@@ -110,6 +111,12 @@ LISTA DE LOS DESEOS:
 - comentar la utilidad de cada medida de error 
 
  -->
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:unnamed-chunk-1"></span>
+<img src="Modal_regresion_files/figure-html/unnamed-chunk-1-1.png" alt="Regresión en media tipo núcleo con estimador Nadaraya-Watson, en rojo. Como podemos ver, la predicción no detecta la estructura bimodal de los datos." width="432"><p class="caption">
+Figure 1.2: Regresión en media tipo núcleo con estimador Nadaraya-Watson, en rojo. Como podemos ver, la predicción no detecta la estructura bimodal de los datos.
+</p>
+</div>
 <p>En lo sucesivo, revisaremos en la primera sección la construcción del método que se empleará para la estimación del conjunto de modas condicionadas; comentaremos diversas medidas de error que pueden ser de utilidad y terminaremos con un repaso a los diversos selectores de ventana.</p>
 <!-- 
 Algunas de las fuentes de mayor interés se listan a continuación.

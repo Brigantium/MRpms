@@ -160,7 +160,7 @@ malla <- mallador(twosines, k = 10, len = 100) # k: maximum number of modes.
   Print useful information of an `MRpms_pred` object
 
 - [`twosines`](https://brigantium.github.io/MRpms/reference/twosines.md)
-  : Ejemplo de los dos senos.
+  : Two sines shifted in Y axis.
 
 # Articles
 
@@ -168,3 +168,4 @@ malla <- mallador(twosines, k = 10, len = 100) # k: maximum number of modes.
 
 - [Modal
   regression](https://brigantium.github.io/MRpms/articles/Modal_regresion.md):
+- [Model_regresion](https://brigantium.github.io/MRpms/articles/Model_regresion.md):

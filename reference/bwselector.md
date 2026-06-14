@@ -85,7 +85,7 @@ bwselector(
 
   Parameter of shrink in the Nelder-Mead algorithm.
 
-- initial.h:
+- initial.hs:
 
   Candidates to construct the initial simplex in the Nelder-Mead
   algorithm. Currently, there are needed only three diferent candidates

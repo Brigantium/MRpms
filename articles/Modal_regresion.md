@@ -37,6 +37,14 @@ explotan la estructura de la estimación tipo núcleo de la densidad para
 darnos un algoritmo bastante eficiente computacionalmente con el que
 estimar nuestro conjunto de modas objetivo.
 
+![Regresión en media tipo núcleo con estimador Nadaraya-Watson, en rojo.
+Como podemos ver, la predicción no detecta la estructura bimodal de los
+datos.](Modal_regresion_files/figure-html/unnamed-chunk-1-1.png)
+
+Figure 1.2: Regresión en media tipo núcleo con estimador
+Nadaraya-Watson, en rojo. Como podemos ver, la predicción no detecta la
+estructura bimodal de los datos.
+
 En lo sucesivo, revisaremos en la primera sección la construcción del
 método que se empleará para la estimación del conjunto de modas
 condicionadas; comentaremos diversas medidas de error que pueden ser de

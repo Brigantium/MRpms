@@ -9,6 +9,8 @@ Useful links:
 
 - <https://github.com/Brigantium/MRpms>
 
+- <https://brigantium.github.io/MRpms/>
+
 - Report bugs at <https://github.com/Brigantium/MRpms/issues>
 
 ## Author

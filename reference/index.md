@@ -63,4 +63,4 @@
   Print useful information of an `MRpms_pred` object
 
 - [`twosines`](https://brigantium.github.io/MRpms/reference/twosines.md)
-  : Ejemplo de los dos senos.
+  : Two sines shifted in Y axis.
