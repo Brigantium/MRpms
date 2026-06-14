@@ -52,7 +52,7 @@ Chen et al. selector based on the size of prediction sets.}
 
 \item{sigma}{Parameter of shrink in the Nelder-Mead algorithm.}
 
-\item{initial.h}{Candidates to construct the initial simplex in the Nelder-Mead algorithm. Currently, there are needed
+\item{initial.hs}{Candidates to construct the initial simplex in the Nelder-Mead algorithm. Currently, there are needed
 only three diferent candidates saves by rows.}
 }
 \value{

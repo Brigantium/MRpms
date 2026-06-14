@@ -2,19 +2,19 @@
 title: "Modal regression"
 output:
   bookdown::html_document2:
-    base_format: rmarkdown::html_vignette
+    # base_format: rmarkdown::html_vignette
     fig_caption: yes
     toc: true
     toc_depth: 2
 pkgdown:
   as_is: true
 
-vignette: >
-  %\VignetteIndexEntry{Modal regression}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+# vignette: >
+#   %\VignetteIndexEntry{Modal regression}
+#   %\VignetteEngine{knitr::rmarkdown}
+#   %\VignetteEncoding{UTF-8}
 
-bibliography: ../bibliography.bib
+bibliography: bibliography.bib
 ---
 
 
@@ -69,6 +69,20 @@ LISTA DE LOS DESEOS:
 - comentar la utilidad de cada medida de error 
 
  -->
+
+```{r}
+#| fig.cap: "Regresión en media tipo núcleo con estimador Nadaraya-Watson, en rojo. Como podemos ver, la predicción no detecta la estructura bimodal de los datos."
+#| fig.align: 'center'
+#| fig.width: 4.5
+#| fig.asp: 1
+#| echo: false
+
+hCV.NW <- (PLRModels::np.cv(twosines)$h.opt)[2,1]
+model.NW <- ksmooth(twosines[,1],twosines[,2],kernel = "normal", bandwidth = hCV.NW)
+graphics::plot(twosines)
+graphics::lines(model.NW, col = "red")
+
+``` 
 
 
 En lo sucesivo, revisaremos en la primera sección la construcción del método que se empleará para la estimación del conjunto de modas condicionadas; comentaremos diversas medidas de error que pueden ser de utilidad y terminaremos con un repaso a los diversos selectores de ventana.

@@ -12,6 +12,7 @@ Performs modal regression based in the Partial Mean-Shift algorithm for one-dime
 Useful links:
 \itemize{
   \item \url{https://github.com/Brigantium/MRpms}
+  \item \url{https://brigantium.github.io/MRpms/}
   \item Report bugs at \url{https://github.com/Brigantium/MRpms/issues}
 }
 

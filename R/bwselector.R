@@ -35,7 +35,7 @@
 #' 
 #' @param sigma Parameter of shrink in the Nelder-Mead algorithm.
 #' 
-#' @param initial.h Candidates to construct the initial simplex in the Nelder-Mead algorithm. Currently, there are needed
+#' @param initial.hs Candidates to construct the initial simplex in the Nelder-Mead algorithm. Currently, there are needed
 #' only three diferent candidates saves by rows.
 #' 
 #' 

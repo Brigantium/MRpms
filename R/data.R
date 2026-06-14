@@ -1,5 +1,7 @@
 #' @title Two sines shifted in Y axis.
 #'
+#' @details
+#' 
 #' The 200 points from two sines with a certain normal error,
 #' 
 #' * 100 from the usual sine ploted between 0 and 10 (in radians),

@@ -3,7 +3,7 @@
 \docType{data}
 \name{twosines}
 \alias{twosines}
-\title{Ejemplo de los dos senos.}
+\title{Two sines shifted in Y axis.}
 \format{
 An object of class \code{matrix} (inherits from \code{array}) with 200 rows and 2 columns.
 }
@@ -11,7 +11,16 @@ An object of class \code{matrix} (inherits from \code{array}) with 200 rows and 
 twosines
 }
 \description{
-Dos senos a distintas alturas.
+Two sines shifted in Y axis.
+}
+\details{
+The 200 points from two sines with a certain normal error,
+\itemize{
+\item 100 from the usual sine ploted between 0 and 10 (in radians),
+\item 100 from a shifted sine 3 points lower between the same support.
+}
+
+In both cases, error follows a certain \eqn{\mathcal N(0,0.3)}.
 }
 \examples{
 plot(twosines)
