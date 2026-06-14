@@ -82,7 +82,8 @@ model.NW <- ksmooth(twosines[,1],twosines[,2],kernel = "normal", bandwidth = hCV
 plot(twosines)
 lines(model.NW, col = "red")
 
-``` -->
+``` 
+-->
 
 En lo sucesivo, revisaremos en la primera sección la construcción del método que se empleará para la estimación del conjunto de modas condicionadas; comentaremos diversas medidas de error que pueden ser de utilidad y terminaremos con un repaso a los diversos selectores de ventana.
 
