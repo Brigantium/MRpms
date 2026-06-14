@@ -24,5 +24,6 @@ VignetteBuilder: knitr
 Suggests: 
     bookdown,
     rmarkdown,
-    knitr
+    knitr,
+    PLRModels
 
