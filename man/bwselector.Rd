@@ -69,7 +69,9 @@ This function allows a Nelder-Mead based search of smooth parameter. There is tw
 \itemize{
 \item If \code{method = CV} then the algorithm uses the cross-validation like formula suggested by Zhou and Huang as degree of
 fitting,
+
 \deqn{f(\mathbf h) = \displaystyle \frac{1}{n}\sum_{i=1}^n d^2\left(\widehat{M}_{n,\mathbf{h},-i}\left(X_i\right),Y_i\right)\widehat{N}_{\mathbf{h},-i}^2\left(X_i\right)w\left(X_i\right),}
+
 where \eqn{\widehat M_{n,\mathbf{h},-i}(X_i)} is the estimated modes in \eqn{X_i} without consider \eqn{X_i} and \eqn{\widehat{N}_{\mathbf{h},-i}^2\left(X_i\right)w\left(X_i\right)}
 is the number of modes estimated in \eqn{X_i}.
 \item If \code{method = P} then uses the volume of prediction sets instead as measurement of fitting,

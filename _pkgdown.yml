@@ -1,0 +1,5 @@
+url: https://brigantium.github.io/MRpms/
+template:
+  bootstrap: 5
+  math-rendering: mathjax
+

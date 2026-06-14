@@ -1,0 +1,609 @@
+---
+title: "Modal regression"
+output:
+  bookdown::html_document2:
+    base_format: rmarkdown::html_vignette
+    fig_caption: yes
+    toc: true
+    toc_depth: 2
+pkgdown:
+  as_is: true
+
+vignette: >
+  %\VignetteIndexEntry{Modal regression}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+
+bibliography: ../bibliography.bib
+---
+
+
+
+<!-- 
+La regresión no paramétrica (multi)modal busca estimar las modas locales de $Y$ condicionada a ${X=x}$.
+% Presentaremos el algoritmo basado en el <<\textit{Mean Shift} parcial>> empleado para encontrar modas locales condicionadas, hablaremos de la obtención de conjuntos de confianza y de predicción y comentaremos distintos criterios de selección de ventanas.
+El método más usado de estimación es un algoritmo basado en el <<\textit{mean shift}>>  \textit{parcial}.
+Esta metodología permite construir conjuntos de confianza para las modas y conjuntos de predicción para la variable respuesta.
+La selección de una ventana adecuada es determinante para la estimación .
+\end{abstract}
+
+%----------------------------------------------------------------------------------------
+%	Estructura del informe:
+%   - Principales referencias
+%   - Relación con el estimador tipo núcleo, parte teórica
+%   - Propiedades e ilustración
+%----------------------------------------------------------------------------------------
+
+%----------------------------------------------------------------------------------------% -->
+
+# Introducción
+
+La *regresión modal* intenta resolver la problemática que surge cuando existe más de una tendencia en la relación entre la variable respuesta ya la variable explicativa. El caso paradigmático el cual podemos pensar es el de los [dos senos](../reference/twosines.html), representado en la Figura \@ref(fig:gtwosines).
+
+```{r}
+#| label: gtwosines
+#| fig.cap: "Dos senos perturbados con un error normal de varianza 0.3, con soporte entre 0 y 10 radiantes."
+#| fig.asp: 1
+#| fig.width: 4.5
+#| echo: false
+#| fig.align: 'center'
+
+library(MRpms)
+plot(twosines, ylab= "", xlab="")
+```
+
+Como vemos, si se procediese con una regresión clásica, ya sea en media, cuantil o en mediana, la respuesta que obtendríamos sería un único valor, en el caso de la regresión en media incluso un valor donde no hay datos de ninguna de las dos tendencias. La regresión modal cambia el enfoque completamente, buscando como bien indica su nombre detectar las modas de la distribución de $Y$ condicionada a un valor de $X$. De esta forma, ahora no estaremos estimando un valor único sino un conjunto. 
+
+Bajo este nuevo prisma, una idea que se lleva a cabo es la estimación de la densidad de $Y$ condicionada a $X$ y la búsqueda de sus máximos en base a los valores de su derivada. En el caso paramétrico, realizaríamos una estimación por máxima verosimilitud de los parámetros que definen la densidad, plantearíamos las ecuaciones para la anulación de la derivada, y resolveríamos. En el caso no paramétrico, por otro lado, se pueden explorar otras técnicas, entre las que se encuentra el *«mean-shift» parcial*, del que hablaremos en este artículo, que explotan la estructura de la estimación tipo núcleo de la densidad para darnos un algoritmo bastante eficiente computacionalmente con el que estimar nuestro conjunto de modas objetivo.
+
+<!-- 
+LISTA DE LOS DESEOS:
+
+- incluir las razones por las que el partial mean shift es bueno en alguna parte del artículo
+  - eficiente computacionalmente
+  - es una estimación local, no necesitamos una estimación global para estimar las modas en un punto
+  - ...
+
+- añadir una estimación en mediana de la regresión, para poder comparar.
+
+- comentar la utilidad de cada medida de error 
+
+ -->
+
+```{r}
+#| fig.cap: "Regresión en media tipo núcleo con estimador Nadaraya-Watson, en rojo. Como podemos ver, la predicción no detecta la estructura bimodal de los datos."
+#| fig.align: 'center'
+#| fig.width: 4.5
+#| fig.asp: 1
+#| echo: false
+
+hCV.NW <- (PLRModels::np.cv(twosines)$h.opt)[2,1]
+model.NW <- ksmooth(twosines[,1],twosines[,2],kernel = "normal", bandwidth = hCV.NW)
+plot(twosines)
+lines(model.NW, col = "red")
+
+```
+
+En lo sucesivo, revisaremos en la primera sección la construcción del método que se empleará para la estimación del conjunto de modas condicionadas; comentaremos diversas medidas de error que pueden ser de utilidad y terminaremos con un repaso a los diversos selectores de ventana.
+
+<!-- 
+Algunas de las fuentes de mayor interés se listan a continuación.
+\cite{MS} estudió el <<\textit{mean shift}>>.
+\cite{ET} introdujeron la regresión no paramétrica modal.
+\cite{CGTW} dieron resultados asintóticos sobre las medidas de error.
+% del estimador no paramétrico de la regresión modal.
+\cite{ZH} propusieron nuevos criterios de selección de ventana. 
+En lo que sigue, haremos una breve revisión de la metodología y comentaremos algunos resultados importantes.
+% En lo sucesivo revisaremos sus hallazgos.
+%----------------------------------------------------------------------------------------% -->
+
+
+
+# Marco teórico y estimador
+
+Denotemos la variable respuesta unidimensional por $Y\in\mathbb{R}$ y las variables explicativas por $X\in D\subset\mathbb{R}^d$, donde $D$, el soporte de $X$, es un conjunto compacto.
+La regresión modal busca estimar las modas locales de la distribución de $Y$ condicionada a $X=x$, y
+a diferencia de la media o la mediana, el resultado puede ser un conjunto en lugar de un único valor.
+Este paradigma es capaz de detectar 
+aspectos importantes de la distribución que pasan 
+desapercibidos para otros tipos de regresión, como pueden ser la realizada en media o la regresión cuantil.
+Por ejemplo, cuando la distribución de $Y$ condicionada a $X=x$ es asimétrica o multimodal, las modas locales pueden 
+resultar más descriptivas que la media o la mediana.
+
+Denotaremos al conjunto de las modas locales de $Y$ condicionada a $X=x$ por
+$$
+M(x)=\left\{y:\frac{\partial}{\partial y}f(y|x) = 0,\ \frac{\partial^2}{\partial y^2}f(y|x)<0\right\},
+$$
+donde $f(y|x)$ es la densidad de $Y$ condicionada a $X=x$, 
+$$
+f(y|x)=\frac{f(x,y)}{f(x)},
+$$
+siendo $f(x,y)$ y $f(x)$ la densidad conjunta de $X$ e $Y$ y la densidad marginal de $X$, respectivamente.
+
+Fijado $x$, $f(x)$ es una constante, luego también podemos expresar $M(x)$ como:
+$$
+M(x)=\left\{y:\frac{\partial}{\partial y}f(x,y) = 0,\ \frac{\partial^2}{\partial y^2}f(x,y)<0\right\}.
+$$
+
+
+Bajo ciertas condiciones, véase \cite{CGTW}, las modas locales cambian de forma suave a medida que lo hace $x$.
+Por tanto, las modas locales se comportan como una colección de superficies, denominadas *variedades modales*.
+
+Veamos ahora la construcción del estimador
+
+Supongamos que disponemos de una muestra $(X_1,Y_1),\dots,(X_n,Y_n)$.
+Tomando un estimador tipo núcleo de la densidad conjunta de $X$ e $Y$, $\widehat{f}_n(x,y)$, llegamos al siguiente estimador no paramétrico del conjunto
+de modas locales de $Y$ condicionada a $X=x$,
+que denotamos por $\widehat{M}_n(x)$:
+$$
+\left\{y:\frac{\partial}{\partial y}\widehat{f}_n(x,y) = 0,\ \frac{\partial^2}{\partial y^2}\widehat{f}_n(x,y)<0\right\}.
+$$
+ 
+Empezaremos construyendo dicho estimador de la densidad conjunta de $X$ e $Y$.
+<!-- % $\widehat{f}_n(x,y)$.
+%$\widehat{f}(y|x)$.
+%Para ello, necesitamos los estimadores $\widehat{f}(x)$ y 
+%Como $X\in\mathbb{R}^d$ es multivariante, el estimador tipo núcleo de su densidad tendrá la forma:
+%$$\widehat{f}(x)=\frac{1}{n|H_1|^{1/2}}\sum_{i=1}^nK_d\left(H_1^{-1/2}\left(x-X_i\right)\right).$$
+%Tomando la matriz ventana $H_1=h_1^2\cdot I_d$, 
+%tenemos que
+%$$|H_1|^{1/2}=h_1^{2\cdot d\cdot1/2}=h_1^d$$
+%y
+%$$H_1^{-1/2}\left(x-X_i\right)=\frac{x-X_i}{h_1}.$$
+%Eligiendo el \textit{kernel} gaussiano multidimensional, podemos ver que
+% $$\begin{aligned}
+%     & K_d(x)=(2\pi)^{-d/2}\exp\left\{-\frac{1}{2}x^Tx\right\}\\
+%     & =(2\pi)^{-(d-1)/2}(2\pi)^{-1/2}\exp\left\{-\frac{1}{2}||x||^2\right\}\\
+%     & =(2\pi)^{-(d-1)/2}K(||x||),
+% \end{aligned}$$
+%$$
+%K_d(x) = (2\pi)^{-(d-1)/2}K\big(\|x\|\big),
+%$$
+%siendo $K$ el \textit{kernel} gaussiano unidimensional.
+% deberíamos hacer una nota de por qué escogemos este \textit{kernel}.
+%De esta forma, 
+% \begin{align*}
+%     & \widehat{f}(x) = \frac{1}{n|H_1|^{1/2}}\sum_{i=1}^n K_d\left(H_1^{-1/2}\left(x-X_i\right)\right)\\
+%     & =\frac{1}{nh_1^d}\sum_{i=1}^n K_d\left(\frac{x-X_i}{h_1}\right)\\
+%     & =\frac{(2\pi)^{-(d-1)/2}}{nh_1^d}\sum_{i=1}^nK\left(\frac{\left|\left|x-X_i\right|\right|}{h_1}\right).
+% \end{align*}
+%$$
+%\widehat{f}(x) = \frac{(2\pi)^{-(d-1)/2}}%{nh_1^d}\sum_{i=1}^nK\left(\frac{\left\|x-X_i\right\|}{h_1}\right).
+%$$
+%A continuación obtendremos una estimación tipo núcleo de la densidad conjunta de $X$ e $Y$. 
+%De nuevo  -->
+Partimos de la expresión general del estimador tipo núcleo multidimensional, $\widehat f(x,y)$:
+$$
+\begin{align*}
+    % &\widehat{f}(x,y)=
+    \frac{\sum_{i=1}^nK_{d+1}\left(H^{-1/2}\left((x,y)-\left(X_i,Y_i\right)\right)\right)}{n|H|^{1/2}},
+\end{align*}
+$$
+donde $K_{d+1}$ es el *kernel* y $H$ la matriz de ventanas. Tomando $H$ de la forma
+$$
+H=\left(\begin{array}{c|c}
+    h_1^2\cdot I_d & 0 \\
+    \hline
+    0 & h_2^2
+\end{array}\right),
+$$
+tendríamos que
+$$
+\begin{gather*}
+|H|^{1/2}=\left(h_1^{2\cdot d}\cdot h_2^{2}\right)^{1/2}=h_1^dh_2,\\
+H^{-\frac{1}{2}}\left((x,y)-\left(X_i,Y_i\right)\right)=\left(\frac{x-X_i}{h_1},\frac{y-Y_i}{h_2}\right).
+\end{gather*}
+$$
+
+ Usando un *kernel* gaussiano^[Unidimensional: $ K(x)=(2\pi)^{-1/2}e^{-x^2/2}$. Multidimensional: $K_d(\mathbf{x}) = (2\pi)^{-d/2}e^{-\mathbf{x}^t\mathbf{x}/2}$] multidimensional, podemos separar la variable $X$ de la $Y$ de la siguiente forma:
+<!-- % $$\begin{aligned}
+%     & K_{d+1}(x,y)=(2\pi)^{-(d+1)/2}\exp\left\{-\frac{1}{2}(x,y)^T(x,y)\right\}\\
+%     & =(2\pi)^{-d/2}(2\pi)^{-1/2}\exp\left\{-\frac{1}{2}\left(x^Tx+y^2\right)\right\}\\
+%     & =(2\pi)^{-d/2}(2\pi)^{-1/2}\exp\left\{-\frac{1}{2}x^Tx\right\}\exp\left\{-\frac{1}{2}y^2 \right\}\\
+%     & = K_d\left(x\right)K\left(y\right)= (2\pi)^{-(d-1)/2}K(||x||)K\left(y\right).
+% \end{aligned}$$ -->
+$$
+\begin{align*}
+K_{d+1}(x,y)= (2\pi)^{-(d-1)/2}K(\|x\|)K\left(y\right).
+\end{align*}
+$$
+
+Así, el estimador de la densidad conjunta, $\widehat f(x,y)$, quedaría 
+<!-- % como
+% $$\begin{aligned}
+%     & \widehat{f}(x,y) = \frac{\sum_{i=1}^nK_{d+1}\left(H_2^{-1/2}\left(x-X_i,y-Y_i\right)\right)}{n|H_2|^{1/2}}\\
+%     & = \frac{(2\pi)^{-(d-1)/2}}{nh_1^dh_2}\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right).
+% \end{aligned}$$ -->
+$$
+\frac{(2\pi)^{-(d-1)/2}}{nh_1^dh_2}\sum_{i=1}^nK\left(\frac{\|x-X_i\|}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right).
+$$
+
+
+<!-- %Finalmente, nuestro estimador tipo núcleo de la densidad de $Y$ condicionada a $X=x$ es
+%$$\widehat{f}(y|x)=\frac{\widehat{f}(x,y)}{\widehat{f}(x)}$$
+%y substituyendo por sus respectivos valores, llegamos a 
+% \begin{align*}
+    % & \frac{\frac{(2\pi)^{-(d-1)/2}}{nh_1^dh_2}\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)}{\frac{(2\pi)^{-(d-1)/2}}{nh_1^d}\sum_{i=1}^nK\left(\frac{\left|\left|x-X_i\right|\right|}{h_1}\right)}\\
+    % & = \frac{\frac{1}{h_2}\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)}{\sum_{i=1}^nK\left(\frac{\left|\left|x-X_i\right|\right|}{h_1}\right)}\\
+    % &
+    %$$\sum_{i=1}^n\underset{\omega_i(x)}{\underbrace{\frac{K\left(\frac{||x-Xi||}{h_1}\right)}{\sum_{i=1}^nK\left(\frac{\left|\left|x-X_i\right|\right|}{h_1}\right)}}} \underset{K_{h_2}(y-Y_i)}{\underbrace{ \frac{1}{h_2} K\left(\frac{y-Y_i}{h_2}\right)}}$$
+    % \\
+    % & = \sum_{i=1}^nw_i(x) K_{h_2}\left(y-Y_i\right).
+% \end{align*} -->
+
+<!-- % Ahora, recordemos la forma de nuestro \textit{\textit{kernel}},
+% $$
+% % \begin{aligned}
+%     % & 
+%     K(x)=(2\pi)^{-1/2}e^{-x^2/2}
+%     % \\
+%     % &\Rightarrow K^\prime(x)=(2\pi)^{-1/2}e^{-x^2/2}(-x)=-xK(x)
+% % \end{aligned} 
+% $$
+% por lo que  -->
+Ahora bien, se verifica que 
+$$
+K^\prime(x)=(2\pi)^{-1/2}e^{-x^2/2}(-x)=-xK(x).
+$$
+
+<!-- % y por tanto, para el \textit{\textit{kernel}} reescalado\footnote{$K_h(x) = \frac{1}{h}K(x/h)$}
+% $$
+% \frac{\partial }{\partial y}K_{h_2}(y - Y_i) = - \frac{y - Y_i}{h_2^2}K_{h_2}(y-Y_i)
+% $$
+% $$\frac{\partial}{\partial y}K\left(\frac{y-Y_i}{h_2}\right)=-\left(\frac{y-Y_i}{h_2}\right)K\left(\frac{y-Y_i}{h_2}\right)\frac{1}{h_2}=\frac{Y_i-y}{h_2^2}K\left(\frac{y-Y_i}{h_2}\right).$$
+%De la misma forma, obtenemos la expresión del \textit{\textit{kernel}} reescalado,
+% $$\begin{aligned}
+%     & K_h(x) = \frac{1}{h}K\left(\frac{x}{h}\right)\\
+%     & \Rightarrow K_h^\prime(x) = \frac{1}{h}K^\prime\left(\frac{x}{h}\right)\frac{1}{h}=\frac{1}{h^2}K\left(\frac{x}{h}\right)\left(-\frac{x}{h}\right)\\
+%     &  = -\frac{x}{h^3}K\left(\frac{x}{h}\right) = -\frac{x}{h^2}K_h\left(\frac{x}{h}\right).
+% \end{aligned}$$
+%$$
+%K_h^\prime(x) = -\frac{x}{h^2}K_h(x/h).
+%$$ -->
+
+De esta manera, podemos escribir la derivada parcial $\partial \widehat f(x,y)/\partial y$ de la siguiente manera:
+<!-- % \begin{align*}
+%     & \frac{\partial}{\partial y}\widehat{f}(y|x)=\sum_{i=1}^nw_i(x) K^\prime_{h_2}\left(y-Y_i\right)\\
+%     & =\frac{1}{h_2^2}\sum_{i=1}^n\frac{K\left(\frac{||x-Xi||}{h_1}\right)}{\sum_{i=1}^nK\left(\frac{\left|\left|x-X_i\right|\right|}{h_1}\right)} K_{h_2}\left(y-Y_i\right)\left[Y_i-y\right]\\
+%     & =\frac{1}{h_2^2\sum_{i=1}^nK\left(\frac{\left|\left|x-X_i\right|\right|}{h_1}\right)}\times\\
+%     & \times \left[\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)\frac{1}{h_2}K\left(\frac{y-Y_i}{h_2}\right)Y_i\right. \\
+%     & \left. - y\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)\frac{1}{h_2}K\left(\frac{y-Y_i}{h_2}\right)\right]\\
+%     & = \frac{1}{h_2^2}\frac{\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)\frac{1}{h_2}K\left(\frac{y-Y_i}{h_2}\right)}{\sum_{i=1}^nK\left(\frac{\left|\left|x-X_i\right|\right|}{h_1}\right)}\times\\
+%     & \times\left[\frac{\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)Y_i}{\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)}-y\right]\\
+%     & = \frac{\widehat{f}(y|x)}{h_2^2}\left[m(x,y) -y\right]
+% \end{align*}
+% \begin{align*}
+%  & \frac{\partial}{\partial y}\widehat{f}(y|x)=\sum_{i=1}^nw_i(x) K^\prime_{h_2}\left(y-Y_i\right)\\
+%  &=\frac{1}{h_2^2}\sum_{i=1}^n\frac{K\left(\frac{||x-Xi||}{h_1}\right)K_{h_2}\left(y-Y_i\right)\left[Y_i-y\right]}{\sum_{i=1}^nK\left(\frac{\left|\left|x-X_i\right|\right|}{h_1}\right)}
+% \end{align*}
+% y desarrollando el numerador,
+% \begin{align*}
+%     & \sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)\frac{1}{h_2}K\left(\frac{y-Y_i}{h_2}\right)Y_i \\
+%     &- y\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)\frac{1}{h_2}K\left(\frac{y-Y_i}{h_2}\right)
+% \end{align*}
+% sólo es necesario extraer factor común y podemos ver que $ \frac{\partial}{\partial y}\widehat{f}(y|x)$ es proporcional a
+% \begin{align*}
+%     &\frac{\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)Y_i}{\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)}-y\\
+%     & = m(x,y) -y.
+% \end{align*}
+% De hecho, si recuperamos el denominador y el factor común que extrajimos, nos queda que 
+% $$
+%  \frac{\partial}{\partial y}\widehat{f}(y|x) = \frac{\widehat{f}(y|x)}{h_2^2}\left[m(x,y) -y\right].
+% $$
+%
+% Forma sólo ocn la conjunta de ANGEL
+%
+%
+% \begin{align*}
+%  & \frac{\partial}{\partial y}\widehat{f}(x,y)=\frac{(2\pi)^{-(d-1)/2}}{nh_1^dh_2}\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)\frac{Y_i-y}{h_2^2}\\
+%  &=\frac{1}{h_2^2}\frac{(2\pi)^{-(d-1)/2}}{nh_1^dh_2}\left[\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)Y_i - y \sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)\right]\\
+%  & = \frac{1}{h_2^2}\frac{(2\pi)^{-(d-1)/2}}{nh_1^dh_2}\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)\left[\frac{\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)Y_i}{\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)} - y \right]\\
+%  & = \frac{\widehat{f}(x,y)}{h_2^2}\left[m(x,y)-y\right]
+% \end{align*}
+%
+%
+% Forma sólo con la conjunta de IKER
+%
+% -->
+<!-- %(2\pi)^{-\frac{d-1}{2}} -->
+\begin{equation}
+\sum_{i=1}^nK\bigg(\frac{\|x-X_i\|}{h_1}\bigg)K\bigg(\frac{y-Y_i}{h_2}\bigg)\frac{Y_i-y}{h_1^{d}h_2^3} (\#eq:mean-shift)
+\end{equation}
+<!-- % --salvo por un factor $n^{-1}(2\pi)^{-(d-1)/2}$ multiplicando--.  -->
+--obviando la constante $n^{-1}(2\pi)^{-(d-1)/2}$--. 
+
+Si ahora denotamos por $m(x,y) - y$ a la siguiente expresión,
+$$
+\underset{m(x,y)}{\underbrace{\frac{\sum_{i=1}^nK\left(\frac{\|x-X_i\|}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)Y_i}{\sum_{i=1}^nK\left(\frac{\|x-X_i\|}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)}}} - y 
+$$
+podemos expresar \@ref(eq:mean-shift) como 
+<!-- % \frac{\Big[m(x,y) - y\Big]}{h_2^3h_1^d}\sum_{i=1}^nK\bigg(\frac{\|x-X_i\|}{h_1}\bigg)K\bigg(\frac{y-Y_i}{h_2}\bigg) -->
+$$
+\frac{m(x,y) - y}{h_2^3h_1^d}\sum_{i=1}^nK\bigg(\frac{\|x-X_i\|}{h_1}\bigg)K\bigg(\frac{y-Y_i}{h_2}\bigg)
+$$
+y, recuperando la constante:
+<!-- % de forma que, incluyendo la constante antes retirada, obtenemos la base de nuestro estimador:  -->
+$$
+\frac{\partial}{\partial y} \widehat f(x,y) = \frac{\widehat f(x,y)}{h_2^2}\Big[m(x,y) - y\Big].
+$$
+<!-- % y desarrollando el numerador,
+% \begin{align*}
+%     & \sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)\frac{1}{h_2}K\left(\frac{y-Y_i}{h_2}\right)Y_i \\
+%     &- y\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)\frac{1}{h_2}K\left(\frac{y-Y_i}{h_2}\right)
+% \end{align*}
+% sólo es necesario extraer factor común y podemos ver que $ \frac{\partial}{\partial y}\widehat{f}(y|x)$ es proporcional a
+% \begin{align*}
+%     &\frac{\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)Y_i}{\sum_{i=1}^nK\left(\frac{||x-Xi||}{h_1}\right)K\left(\frac{y-Y_i}{h_2}\right)}-y\\
+%     & = m(x,y) -y.
+% \end{align*}
+% De hecho, si recuperamos el denominador y el factor común que extrajimos, nos queda que 
+% $$
+%  \frac{\partial}{\partial y}\widehat{f}(y|x) = \frac{\widehat{f}(y|x)}{h_2^2}\left[m(x,y) -y\right].
+% $$ -->
+
+El factor $m(x,y)-y$ se conoce como «*mean shift*» *parcial* (por venir de una derivada parcial y no del gradiente completo).
+<!-- % Se tiene que $\frac{\partial}{\partial y}\widehat{f}(y|x)=0$ si y solo si $m(x,y) - y=0$, suponiendo que $\widehat{f}(y|x)>0.$ -->
+Se tiene que, si $y_m$ es una moda local de 
+<!-- % $Y|_{X=x}$, -->
+$Y$ condicionada a $X=x$,
+entonces $\partial\widehat{f}(x,y_m)/\partial y=0$, luego $m(x,y_m) = y_m$.
+Además, \cite{MS} probó que las modas locales son las únicas soluciones estables de la ecuación $m(x,y)=y$.
+<!-- % Se tiene que $\partial\widehat{f}(x,y)/\partial y=0$ si y solo si $m(x,y) - y=0$, suponiendo que $\widehat{f}(x,y)\not = 0$.
+% Dado un $x$, para encontrar un valor de $y$ para el cual $\frac{\partial}{\partial y}\widehat{f}(y|x)=0$, puede buscarse una solución de la ecuación $m(x,y)=y$.
+% Dado, pues, un punto $x\in \mathbb{R}^d$, para encontrar un valor de $y$ para el cual se anule la parcial,
+% $\frac{\partial}{\partial y}\widehat{f}(x,y)=0$,
+% puede buscarse una solución de la ecuación $m(x,y)=y$. En \cite{CGTW} se presenta el siguiente algoritmo: -->
+Este resultado motiva el uso del siguiente algoritmo,
+comentado en @CGTW, para encontrar las modas locales de $Y$ condicionada a $X=x$:
+
+
+
+ 
+ Dada una muestra 
+ <!-- % de la forma 
+ % $\{(X_i, Y_i)\}_{i=1}^n$ -->
+ $(X_1,Y_1),\dots,(X_n,Y_n)$
+ y un punto $x$, definimos
+ <!-- % , para diversos $x_i$,  -->
+ unos puntos iniciales 
+ <!-- % $\mathcal M(x_i)= \{(x_i,y_{j_{i}}^0)\,\colon j_i\in J_i\}$, -->
+ <!-- $\mathcal M(x)= \{(x,y_j^0)\,\colon j\in J\}$ y -->
+<!-- \begin{enumerate} -->
+<!-- % \item para cada $j_i\in J_i$, actualizamos el valor de $y_{j_i}^k$ haciendo $y_{j_i}^{k+1} = m(x_i,y_{j_i}^k).$  -->
+
+1. para cada $j\in J$, actualizamos el valor de $y_{j}^k$ haciendo $y_{j}^{k+1} = m(x,y_{j}^k).$ 
+    <!-- % $$
+    % y_{j_i}^{k+1} = m(x_i,y_{j_i}^k)
+    % $$
+    % \item iteramos por separado en cada $j_i$ hasta converger a unos $y_{j_i}^\infty$. La estimación del conjunto de modas locales de $Y$ condicionada a $X=x_i$ será $\widehat M_n(x_i) = \{y_{j_i}^\infty\,\colon {j_i}\in J_i \}$. -->
+
+2. iteramos por separado en cada $j$ hasta converger a unos $y_{j}^\infty$. La estimación del conjunto de modas locales de $Y$ condicionada a $X=x$ será $\widehat M_n(x) = \{y_{j}^\infty\,\colon j\in J \}$.
+<!-- \end{enumerate} -->
+<!-- % Para ello, se lleva a cabo un proceso iterativo de punto fijo empezando en un valor $y^0$ y calculando $y^{k+1}=m(x, y^k)$ hasta alcanzar la convergencia de la sucesión $y_n$.
+% Los pasos que se dan en este algoritmo son \textit{mean shifts parciales}, pues $y^{k+1}= y^k + (m(x, y^k) - y^k)$.
+% Los pasos de este algoritmo son distintos \textit{mean shifts}, pues $y^{k+1}= y^k + (m(x, y^k) - y^k)$, razón por la que es conocido por el nombre del algoritmo <<\textit{mean-shift} parcial>>. -->
+
+Básicamente, lo que se hace en cada iteración es mover la componente $y$ del punto a la media de las componentes $y$ de los puntos de la muestra 
+<!-- % cercanos (en realidad, de todos los puntos ponderados en función de la cercanía) -->
+ponderados en función de la cercanía, de ahí el nombre del procedimiento.
+Se trata de un algoritmo de ascenso en la dirección del gradiente (dirección dada por el «*mean shift*» *parcial*) en el que la longitud del paso es $h_2^2/\widehat f(x,y^k)$ (se ajusta automáticamente en cada iteración).
+<!-- % En efecto:
+% $$m(x,y)-y=\frac{h_2^2}{\widehat{f}(y|x)}\frac{\partial}{\partial y}\widehat{f}(y|x).$$
+% $$m(x,y)-y=\frac{h_2^2}{\widehat{f}(x,y)}\frac{\partial}{\partial y}\widehat{f}(x,y).$$
+% Un valor grande de $h_2$ hace que la longitud de los pasos sea mayor y l
+% Además, cuando $\widehat{f}(y|x)$ es pequeño, la longitud del paso es grande y viceversa.
+% Cuando $\widehat{f}(x,y)$ es pequeño, la longitud del paso es grande y viceversa,
+% escapando el algoritmo rápidamente de zonas de baja densidad y dando pasos más pequeños en zonas de densidad alta.
+% Cuando $\frac{\partial}{\partial y}\widehat{f}(y|x)=0$, la longitud del paso también sería $0$.
+% Cuando $\frac{\partial}{\partial y}\widehat{f}(x,y)=0$, la longitud del paso también sería $0$.
+% Podemos obtener una estimación tipo núcleo de la densidad de $Y$ condicionada a $X=x$, $\widehat{f}(y|x)$, a través de una estimación de la densidad marginal de $X$, $\widehat{f}(x)$, y otra de la densidad conjunta de $X$ e $Y$, $\widehat{f}(x,y)$. -->
+El paso es más largo en zonas de baja densidad y se va reduciendo a medida que el iterante se acerca a una moda.
+
+<!-- % de la siguiente forma:
+% $$\widehat{f}(y|x)=\frac{\frac{1}{nh_1h_2}\sum_{i=1}^n K_1\left(\frac{||X_i-x||}{h_1}\right)K_2\left(\frac{Y_i-y}{h_2}\right)}{\frac{1}{nh_1}\sum_{i=1}^n K_1\left(\frac{||X_i-x||}{h_1}\right)}.$$ -->
+
+
+<!-- % Para llevar a cabo la estimación del conjunto $\widehat{M}_n(x)$, emplearemos el algoritmo conocido como <<\textit{mean shift} parcial>>, que consiste en repetir iterativamente los siguientes pasos hasta alcanzar la convergencia:
+
+% Se trata de un algoritmo de ascenso en la dirección del gradiente en el que el paso se selecciona automáticamente en cada iteración. -->
+
+Aunque durante el desarrollo hemos utilizado un *kernel* gaussiano, no es la única opción.
+La condición que debe satisfacerse es que el *kernel* utilizado en la variable $Y$ sea *radialmente simétrico* y, en concreto, de la forma: 
+$$K(y)=c_k\cdot k(y^2),$$
+donde $k$ se denomina *perfil del kernel $K$* y $c_k$ es una constante de integración.
+Si denotamos 
+$$g(y)=-k^\prime(y) \text{ y } G(y)=c_g\cdot g(y^2),$$
+en el algoritmo del 
+<!-- % <<\textit{mean shift} parcial>>  -->
+«*mean shift*» *parcial*
+aparecería el *kernel* $G$ actuando sobre la variable $Y$ en la expresión de $m$.
+Se dice que el *kernel* $K$ es la *sombra del kernel* $G$.
+En el caso del *kernel* gaussiano, $K=G$.
+<!-- % , el \textit{\textit{kernel}} gaussiano es la sombra de sí mismo. -->
+El *kernel* de Epanechnikov, que también satisface la condición, es la sombra del *kernel* uniforme. Véase @MS.
+<!-- % sobre este tema.
+%Para que funcione correctamente, es necesario que el \textit{kernel} empleado sobre las $Y$ sea radialmente simétrico, véase \cite{ET}, esto es, que sus conjuntos de nivel sean esferas de la dimensión que corresponda ---en este artículo consideramos el gaussiano, por ejemplo---.
+% Por ejemplo, nosotros usaremos un \textit{kernel} gaussiano con matriz de covarianzas $h_1\cdot I_d$.  -->
+
+
+
+# Medidas de error 
+
+Antes de comentar algunas de las medidas de error consideradas en la literatura, introducimos la *distancia Hausdorff*, en la que se basan.
+Se trata de una distancia entre conjuntos definida como
+$$
+Haus(A, B) = \inf \{r:A\subseteq B\oplus r, B \subseteq A\oplus r\},
+$$
+donde $A\oplus r=\{x:d(x,A)\leq r\}$ y $d(x,A)=\inf_{y\in A} \|x- y\|$.
+Intuitivamente, coincide con la máxima distancia entre un punto de un conjunto y el punto más cercano del otro conjunto.
+<!-- % se corresponde con la distancia entre el punto que está más alejado del otro conjunto y el otro conjunto. -->
+
+Consideraremos como medida de error puntual en 
+<!-- % un punto  -->
+$x\in\mathbb{R}^d$ la distancia Hausdorff entre $M(x)$, el conjunto teórico de modas locales de 
+$Y$ condicionada a $X=x$,
+<!-- % $Y|_{X=x}$,  -->
+y $\widehat{M}_n(x)$, la estimación del mismo:
+$$
+\Delta_n(x)=Haus\left(\widehat{M}_n(x), M(x)\right).
+$$
+Y, como medida de error sobre todas las $x$ simultáneamente, definimos
+$$
+\Delta_n = \sup_{x\in D} Haus\Big(\widehat M_n(x), M_n(x)\Big).
+$$
+
+<!-- %También podemos utilizar medidas globales del error, como el errror uniforme $\Delta_n=\sup_{x\in D} \Delta_n(x)$ o la media del error cuadrático integrado:
+%$$MISE\left(\widehat{M}_n(x)\right)=\mathbb{E}\left[\int_{x\in D} \Delta_n^2(x)\, dx\right],$$
+%que es un número y no una variable aleatoria como las otras medidas. -->
+
+
+## Conjuntos de confianza
+Presentaremos dos tipos de conjuntos de confianza: puntuales y uniformes, véase @CGTW.
+
+ Empezaremos por los *conjuntos de confianza puntuales*.
+ Fijados $x\in D$ y $\alpha\in(0,1)$, 
+ <!-- % nuestro objetivo sería  -->
+ queremos encontrar un conjunto $\widehat{C}_n^0(x)$ tal que 
+ $$
+ \mathbb{P}\left(M(x)\in\widehat{C}_n^0(x)\right)=1-\alpha.
+ $$
+ Este conjunto se podría expresar como
+ $$
+ \widehat{C}_n^0(x)=\widehat{M}_n(x)\oplus \delta_{n,1-\alpha}(x),
+ $$
+ donde $\delta_{n,1-\alpha}(x)$ es el cuantil $1-\alpha$ de la variable $\Delta_n(x)$.
+ <!-- % , es decir, cumple $\mathbb{P}\left(\Delta_n(x)>\delta_{n,1-\alpha}(x)\right)=\alpha.$ -->
+ 
+ <!-- % Sin embargo, esto solo podemos plantearlo a nivel teórico. 
+ % No es posible obtener los conjuntos de confianza de esta manera en la práctica porque 
+ Como la distribución de $\Delta_n(x)$ es desconocida,
+ es necesario aproximarla,
+ % pero puede aproximarse mediante 
+ por ejemplo mediante técnicas de simulación -->
+ <!-- % un -->
+ *bootstrap* (lo más sencillo sería un *naïve bootstrap*).
+ Los pasos a seguir serían los siguientes:
+
+1. Partiendo de la muestra 
+     <!-- % $$(X_1,Y_1),\dots,(X_n,Y_n)$$
+     que tenemos, obtenemos una remuestra 
+     % $(X_1^\ast,Y_1^\ast),\dots,(X_n^\ast,Y_n^\ast)$
+     mediante \textit{
+     % naïve 
+     \textit{bootstrap}}.
+     % (esto es, escogiendo al azar con reemplazo $n$ puntos la muestra original).
+     \item Para la muestra \textit{bootstrap}, 
+     % $$(X_1^\ast,Y_1^\ast),\dots,(X_n^\ast,Y_n^\ast),$$
+     estimamos el conjunto de modas locales de $Y$ condicionada a $X=x$, $\widehat{M}_n^\ast(x)$, y computamos 
+     % calculamos la distancia Hausdorff entre este conjunto y $\widehat{M}_n(x)$, obteniendo  -->
+    $$
+    \widehat{\Delta}_n^\ast(x)=Haus\left(\widehat{M}_n^\ast(x),\widehat{M}_n(x)\right).
+    $$
+
+2. Repitiendo los dos primeros pasos $B$ veces, obtenemos $\widehat{\Delta}_{1,n}^\ast(x),\dots,\widehat{\Delta}_{B,n}^\ast(x)$, y podemos usar el cuantil muestral $1-\alpha$ de este conjunto, $\widehat{\delta}_{n,1-\alpha}(x)$, como estimador de $\delta_{n,1-\alpha}(x).$ 
+ <!-- \end{enumerate} -->
+
+Así, la estimación del conjunto de confianza para $M(x)$ a nivel $1-\alpha$ sería 
+$$
+\widehat{C}_n(x)=\widehat{M}_n(x)\oplus \widehat{\delta}_{n,1-\alpha}(x).
+$$
+
+ <!-- % Usando la medida $\Delta_n$, podemos construir conjuntos de confianza uniformes a cualquier nivel $1-\alpha$.  -->
+También podemos construir *conjuntos de confianza uniformes.*
+De forma análoga a los conjuntos de confianza puntuales, denotamos por $\delta_{n,1-\alpha}$ al cuantil $1-\alpha$ de $\Delta_n$ y tenemos que 
+$$
+\mathbb{P}\left(M(x)\subseteq \widehat{M}_n(x)\oplus \delta_{n,1-\alpha},\forall x\in D\right)=1-\alpha.
+$$
+ De nuevo, la distribución de $\Delta_n$ es desconocida y debemos recurrir a técnicas de remuestreo para aproximarla. 
+ <!-- % Empleando el mismo procedimiento antes descrito para los conjuntos de confianza puntuales,  -->
+ Repitiendo el procedimiento descrito para los conjuntos puntuales, podemos calcular, para cada muestra *bootstrap*,
+$$
+\Delta_n^\ast= \sup_{x\in D}\widehat{\Delta}_n^\ast(x)
+$$
+y estimar $\delta_{n,1-\alpha}$ por $\widehat{\delta}_{n,1-\alpha}$, el cuantil $1-\alpha$ muestral de $\Delta_{1,n}^\ast,\dots,\Delta_{B,n}^\ast$.
+Así, llegamos a la siguiente estimación del conjunto de confianza uniforme a nivel $1-\alpha$: 
+$$
+\widehat{C}_n=\left\{(x,y):x\in D, y\in \widehat{M}_n(x)\oplus \widehat{\delta}_{n,1-\alpha}\right\}.
+$$
+
+## Conjuntos de predicción
+ A parte de los conjuntos de confianza para las modas locales de $Y$ condicionada a $X=x$, también podemos usar la regresión modal para construir conjuntos de predicción para la propia $Y$, 
+ % condicionada a $X=x$
+ véase @CGTW.
+ En concreto, nos centraremos en encontrar *conjuntos de predicción uniformes*.
+ 
+Dado un nivel $1-\alpha$, queremos definir un conjunto $\mathcal{P}_{1-\alpha}$ tal que 
+$$
+\mathbb{P}\left(Y\in\mathcal{P}_{1-\alpha}\right)\geq 1-\alpha.
+$$
+Este conjunto será de la forma 
+$$
+\mathcal{P}_{1-\alpha}=\left\{(x,y):x\in D, y\in M(x)\oplus \varepsilon_{1-\alpha}\right\},
+$$
+donde $\varepsilon_{1-\alpha}$ es el cuantil $1-\alpha$ de la variable aleatoria $d\left(Y,M(x)\right).$
+ <!-- % esto es, 
+ % $$\varepsilon_{1-\alpha}=\inf\left\{\varepsilon\geq0:\mathbb{P}\left(d\left(Y,M(x)\right)>\varepsilon\right)\leq\alpha\right\}.$$ -->
+ 
+ En la práctica, podemos aproximar $\varepsilon_{1-\alpha}$ por el cuantil $1-\alpha$ de
+ <!-- % l conjunto -->
+ $d\Big(Y_1,\widehat{M}_n(X_1)\Big),\dots,d\Big(Y_n,\widehat{M}_n(X_n)\Big)$, al que denotaremos por $\widehat{\varepsilon}_{1-\alpha}.$
+ De esta manera, la estimación del conjunto de predicción uniforme a nivel $1-\alpha$ es
+$$
+\widehat{\mathcal{P}}_{1-\alpha}=\left\{(x,y):x\in D, y\in \widehat{M}_n(x)\oplus \widehat{\varepsilon}_{1-\alpha}\right\}.
+$$
+
+## Selección de ventanas
+ <!-- % El conjunto $\widehat{M}_n(x)$ obtenido depende -->
+
+ La estimación $\widehat{M}_n(x)$ depende
+ en gran medida 
+ de la elección de las ventanas, $\mathbf{h}=(h_1,h_2)$.
+ @ET proponen usar las mismas ventanas que se recomiendan en la estimación tipo núcleo de la densidad de 
+ <!-- % $Y|_{X=x}$, -->
+ $Y$ condicionada a $X=x$, 
+ lo que en primera instancia parece razonable.
+ <!-- % lo que tiene sentido si tenemos en cuenta que esa es la estimación en la que se basa nuestro estimador de regresión modal.  -->
+ <!-- %Aunque la estimación del conjunto de modas locales de $Y$ condicionada a $X=x$ se base en la estimación no paramétrica de la densidad condicionada, las ventanas utilizadas en este contexto no suelen ser adecuadas para estimar las modas. -->
+ Sin embargo, según @ZH, este criterio no es adecuado, pues a la hora de estimar modas locales no nos interesan otros aspectos de la densidad como pueden ser las colas o las alturas de las propias modas.
+ <!-- %Esto se debe a que, al estimar las modas, no nos intersan otros aspectos de la densidad como pueden ser las colas o las alturas de las propias modas. -->
+ <!-- % Por este motivo, comentamos algunos criterios de selección de ventanas planteados específicamente para regresión modal. -->
+A continuación, comentamos algunos criterios vistos en la literatura, aunque 
+<!-- % queremos advertir la falta de investigación en este campo. -->
+merece la pena destacar que este sigue siendo un tema de investigación abierto.
+<!-- % , pues ni siquiera está claro que $h_2$ sea un parámetro de suavizado al uso, que deba tender a cero a medida que crece el tamaño muestral. -->
+ 
+<!-- % Los métodos de selección de ventana empleados en la estimación de la función de densidad condicionada no son adecuados, en general, para regresion modal.  -->
+@CGTW plantean un criterio que consiste en buscar el valor de
+$\mathbf{h}$
+<!-- % $\mathbf{h}=(h_1,h_2)\in\mathbb{R}^+\times\mathbb{R}^+$  -->
+para el cual se minimiza el volumen del conjunto de predicción uniforme asociado:
+$$
+Vol\left(\widehat{\mathcal{P}}_{1-\alpha,\mathbf{h}}\right)=\widehat{\varepsilon}_{1-\alpha,\mathbf{h}}\int_{x\in D}\widehat{N}_{\mathbf{h}}(x)\, dx,
+$$
+donde $\widehat{N}_{\mathbf{h}}(x)$ es el número de modas locales estimadas en $X=x$.
+Para evitar un sobreajuste, puede calcularse $\widehat{\varepsilon}_{1-\alpha,\mathbf{h}}$ por validación cruzada.
+<!-- % Este método, si bien es cierto,
+% Cabe resaltar que este método depende de un hiperparámetro de afinado, $\alpha$, cuya elección puede influir en el resultado. -->
+
+<!-- % En @ZH se presenta una idea de validación cruzada basada en la minimización de la  siguiente función, -->
+@ZH cuestionan este método por la presencia de un hiperparámetro
+de afinado, 
+$\alpha$, cuya elección puede influir en el resultado, y sugieren encontrar el $\mathbf{h}$ que minimice la expresión:
+
+ <!-- % Siguiendo con la idea de buscar una predicción precisa sin estimar modas de más, podría usarse la ventana $\mathbf{h}$ que minimice la función -->
+ <!-- % $$CV\left(\mathbf{h}\right)= -->
+$$
+\frac{1}{n}\sum_{i=1}^n d^2\left(\widehat{M}_{n,\mathbf{h},-i}\left(X_i\right),Y_i\right)\widehat{N}_{\mathbf{h},-i}^2\left(X_i\right)w\left(X_i\right),
+$$
+ donde el subíndice $-i$ denota que la estimación se lleva a cabo usando toda la muestra menos el punto $\left(X_i,Y_i\right)$ y $w$ es una función de pesos, con la que se puede restar importancia a zonas en las que haya pocas observaciones.
+<!-- 
+% Como último apunte, queríamos comentar que hemos implementado los métodos comentados en este informe en un paquete de R\footnote{Disponible en https://github.com/Brigantium/MRpms}.
+% paquete \verb|MRpms| de R
+% \stepcounter{footnote}
+% \let\thefootnote\relax\footnotetext{Además, estamos desarrollando un paquete de R sobre este tema, disponible en https://github.com/Brigantium/MRpms}
+  -->
+
+# Bibliografía
+
+
+
